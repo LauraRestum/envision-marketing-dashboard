@@ -1,5 +1,5 @@
 .clickup-page {
-  max-width: 1200px;
+  max-width: 1400px;
 }
 
 .clickup-header {
@@ -51,14 +51,15 @@
   border-radius: var(--radius);
   font-size: 0.813rem;
   display: flex; flex-direction: column; gap: 6px;
+  margin-bottom: 16px;
 }
+
 .clickup-debug {
-  font-size: 0.688rem; color: var(--text-muted);
+  font-size: 0.688rem;
   white-space: pre-wrap; word-break: break-all;
   margin: 0; padding: 8px;
   background: rgba(0,0,0,0.05); border-radius: 4px;
   color: #e88;
-  margin-bottom: 16px;
 }
 
 .clickup-toolbar {
@@ -138,89 +139,100 @@
   font-style: italic;
 }
 
-.clickup-empty-filter {
-  padding: 32px 16px;
-  text-align: center;
-}
-
-.clickup-empty-filter-text {
-  color: var(--text-muted);
-  font-size: 0.813rem;
-}
-
-.clickup-empty-filter-hint {
-  font-size: 0.688rem;
-  color: var(--text-muted);
-  opacity: 0.6;
-  font-style: italic;
-  margin-top: 4px;
-}
-
-/* ── Layout ── */
-.clickup-layout {
+/* ── Board Layout ── */
+.clickup-board-layout {
   display: grid;
   grid-template-columns: 1fr 380px;
   gap: 12px;
   align-items: start;
 }
 
-/* ── Task list ── */
-.clickup-task-list {
+.clickup-board {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+/* ── Status Columns ── */
+.clickup-status-column {
+  min-width: 240px;
+  max-width: 300px;
+  flex: 1;
   background: var(--surface-card);
   border: 1px solid var(--border-dark);
   border-radius: var(--radius);
-  overflow-y: auto;
-  max-height: calc(100vh - 260px);
-}
-
-.clickup-task-row {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+}
+
+.clickup-column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-dark);
+}
+
+.clickup-column-count {
+  font-size: 0.688rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.clickup-column-tasks {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  max-height: calc(100vh - 280px);
+  overflow-y: auto;
+}
+
+/* ── Task Cards ── */
+.clickup-task-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   width: 100%;
-  padding: 12px 16px;
+  padding: 10px 12px;
   text-align: left;
   border-bottom: 1px solid var(--border-dark);
   border-left: 3px solid transparent;
   transition: background 0.18s ease, border-color 0.18s ease;
 }
 
-.clickup-task-row:hover {
+.clickup-task-card:last-child {
+  border-bottom: none;
+}
+
+.clickup-task-card:hover {
   background: rgba(0, 24, 82, 0.04);
 }
 
-body.dark-mode .clickup-task-row:hover {
+body.dark-mode .clickup-task-card:hover {
   background: rgba(255, 255, 255, 0.04);
 }
 
-.clickup-task-row.active {
+.clickup-task-card.active {
   background: rgba(0, 48, 135, 0.06);
   border-left-color: var(--green);
 }
 
-body.dark-mode .clickup-task-row.active {
+body.dark-mode .clickup-task-card.active {
   background: rgba(0, 48, 135, 0.2);
 }
 
-.clickup-task-row.overdue {
+.clickup-task-card.overdue {
   border-left-color: rgba(238, 85, 85, 0.6);
 }
 
-.clickup-task-row.overdue:hover {
+.clickup-task-card.overdue:hover {
   background: rgba(238, 85, 85, 0.04);
-}
-
-.clickup-task-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
 }
 
 .clickup-task-name {
   font-size: 0.813rem;
   font-weight: 600;
-  flex: 1;
   word-break: break-word;
 }
 
@@ -434,30 +446,35 @@ body.dark-mode .drawer-assignee-chip {
 
 /* ── Responsive ── */
 @media (max-width: 1024px) {
-  .clickup-layout {
-    grid-template-columns: 1fr 320px;
+  .clickup-board-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .clickup-drawer {
+    position: static;
   }
 }
 
 @media (max-width: 768px) {
-  .clickup-layout {
-    grid-template-columns: 1fr;
+  .clickup-board {
+    flex-direction: column;
+  }
+
+  .clickup-status-column {
+    min-width: unset;
+    max-width: unset;
   }
 
   .clickup-toolbar {
     flex-direction: column;
   }
 
-  .clickup-task-list {
-    max-height: 400px;
-  }
-
-  .clickup-drawer {
-    position: static;
-  }
-
   .clickup-header {
     flex-wrap: wrap;
+  }
+
+  .clickup-column-tasks {
+    max-height: 300px;
   }
 }
 
@@ -467,7 +484,7 @@ body.dark-mode .drawer-assignee-chip {
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
-  .clickup-task-row,
+  .clickup-task-card,
   .clickup-refresh-btn,
   .clickup-search,
   .clickup-filter,

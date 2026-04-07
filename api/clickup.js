@@ -7,6 +7,9 @@ import getAdminDb from './_db.js';
 const CLICKUP_BASE = 'https://api.clickup.com/api/v2';
 const API_TIMEOUT_MS = 15000; // 15 second timeout for ClickUp API calls
 
+// Default marketing list from the shared ClickUp workspace
+const DEFAULT_LIST_ID = '901301290615';
+
 async function clickupFetch(endpoint, token) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
@@ -46,22 +49,24 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'ClickUp API token not configured. Add CLICKUP_API_TOKEN in Vercel environment variables.' });
   }
 
-  // Query params: action, team_id, list_id
   const { action, team_id, list_id } = req.query;
+  const db = getAdminDb();
 
   let endpoint;
-  if (action === 'tasks' && team_id) {
+  let cacheKey;
+  if (action === 'list_tasks') {
+    const id = list_id || DEFAULT_LIST_ID;
+    endpoint = `${CLICKUP_BASE}/list/${id}/task?include_closed=false&subtasks=true`;
+    cacheKey = `list_${id}`;
+  } else if (action === 'tasks' && team_id) {
     endpoint = `${CLICKUP_BASE}/team/${team_id}/task?include_closed=false&subtasks=true&page=0`;
-  } else if (action === 'list_tasks' && list_id) {
-    endpoint = `${CLICKUP_BASE}/list/${list_id}/task?include_closed=false&subtasks=true`;
+    cacheKey = `tasks_${team_id}`;
   } else if (action === 'teams') {
     endpoint = `${CLICKUP_BASE}/team`;
+    cacheKey = 'teams';
   } else {
-    return res.status(400).json({ error: 'Invalid action. Use: teams, tasks (with team_id), or list_tasks (with list_id)' });
+    return res.status(400).json({ error: 'Invalid action. Use: teams, tasks (with team_id), or list_tasks (with optional list_id)' });
   }
-
-  const db = getAdminDb();
-  const cacheKey = action === 'tasks' ? `tasks_${team_id}` : action === 'list_tasks' ? `list_${list_id}` : 'teams';
 
   try {
     const response = await clickupFetch(endpoint, token);
@@ -75,7 +80,6 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    // Cache the successful response (skip if Firebase not configured)
     if (db) {
       try {
         await db.collection('clickup_cache').doc(cacheKey).set({
@@ -95,7 +99,6 @@ export default async function handler(req, res) {
   } catch (err) {
     console.error('ClickUp API error:', err.message);
 
-    // Fall back to cached data
     if (db) {
       try {
         const cached = await db.collection('clickup_cache').doc(cacheKey).get();
