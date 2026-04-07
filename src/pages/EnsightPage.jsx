@@ -1,14 +1,8 @@
 import { useState, useMemo } from 'react';
 import useStories from '../hooks/useStories';
+import { PILLARS } from '../constants/pillars';
+import PillarTag from '../components/common/PillarTag';
 import './EnsightPage.css';
-
-const PILLARS = [
-  { key: 'research', label: 'Research' },
-  { key: 'vision_rehab', label: 'Vision Rehab' },
-  { key: 'employment', label: 'Employment' },
-  { key: 'education', label: 'Education' },
-  { key: 'arts_culture', label: 'Arts & Culture' },
-];
 
 const STAGE_LABELS = {
   pitch: 'Pitch', assigned: 'Assigned', draft: 'Draft',
@@ -221,7 +215,7 @@ function StoryCard({ story, stages, onEdit, onStageChange }) {
     <div className="story-card" onClick={onEdit} title={`${story.title || '(untitled)'} — ${STAGE_LABELS[story.stage] || story.stage}${story.assignedTo ? ` — ${story.assignedTo}` : ''}`}>
       <div className="story-card-top">
         <span className="story-card-title">{story.title || '(untitled)'}</span>
-        {pillar && <span className="story-pillar-tag">{pillar.label}</span>}
+        {pillar && <PillarTag pillarKey={story.pillar} />}
       </div>
       <div className="story-card-meta">
         {story.assignedTo && <span className="story-assignee">{story.assignedTo.charAt(0).toUpperCase() + story.assignedTo.slice(1)}</span>}

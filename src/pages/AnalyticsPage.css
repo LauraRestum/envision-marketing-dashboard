@@ -257,11 +257,7 @@ body.dark-mode .idea-card:hover { background: rgba(255, 255, 255, 0.02); }
   text-transform: uppercase; padding: 2px 6px;
   background: rgba(0,75,181,0.2); color: var(--blue-mid); border-radius: 2px;
 }
-.idea-pillar-tag {
-  font-size: 0.563rem; font-weight: 700; letter-spacing: 0.04em;
-  text-transform: uppercase; padding: 2px 6px;
-  background: var(--green-dim); color: var(--green); border-radius: 2px;
-}
+/* Pillar tags now use shared PillarTag component */
 .idea-format-tag {
   font-size: 0.563rem; font-weight: 600; letter-spacing: 0.04em;
   text-transform: uppercase; padding: 2px 6px;

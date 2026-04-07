@@ -89,12 +89,7 @@ body.dark-mode .deadline-item:hover { background: rgba(255, 255, 255, 0.04); }
 body.dark-mode .story-card:hover { background: rgba(255, 255, 255, 0.02); }
 .story-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .story-card-title { font-size: 0.813rem; font-weight: 600; flex: 1; }
-.story-pillar-tag {
-  font-size: 0.5rem; font-weight: 700; letter-spacing: 0.04em;
-  text-transform: uppercase; padding: 2px 6px;
-  background: var(--green-dim); color: var(--green);
-  border-radius: 2px; flex-shrink: 0;
-}
+/* Pillar tags now use shared PillarTag component */
 .story-card-meta { display: flex; gap: 8px; }
 .story-assignee, .story-source {
   font-size: 0.688rem; color: var(--text-muted);
