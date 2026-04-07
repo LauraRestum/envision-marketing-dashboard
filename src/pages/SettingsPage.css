@@ -254,6 +254,32 @@ body.dark-mode .integration-card:hover {
   text-decoration: underline;
 }
 
+/* ── Social handles ── */
+.social-handle-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.social-handle-row .status-dot {
+  margin-top: 18px;
+}
+
+.social-label {
+  flex: 1;
+}
+
+.status-dot.yellow {
+  background: #f0a030;
+}
+
+.social-synced-time {
+  font-size: 0.625rem;
+  color: var(--text-muted);
+  margin-top: 18px;
+  white-space: nowrap;
+}
+
 .data-actions {
   display: flex;
   gap: 12px;

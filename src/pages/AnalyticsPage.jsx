@@ -25,7 +25,8 @@ function formatFollowers(count) {
 export default function AnalyticsPage() {
   const navigate = useNavigate();
   const { addPost } = usePosts();
-  const { analytics, loading: analyticsLoading, refresh: refreshAnalytics } = useSocialAnalytics();
+  const { analytics, loading: analyticsLoading, refresh: refreshAnalytics, handles } = useSocialAnalytics();
+  const hasAnyHandle = Object.values(handles).some(Boolean);
 
   return (
     <div className="analytics-page">
@@ -53,7 +54,9 @@ export default function AnalyticsPage() {
               <span className="analytics-plat-note">
                 {connected
                   ? `${cached ? 'Cached' : 'Live'}${lastSynced ? ` · ${new Date(lastSynced).toLocaleTimeString()}` : ''}`
-                  : `Connect ${p.label} API to display live data`}
+                  : handles[p.key]
+                    ? `Could not fetch — will retry`
+                    : `Add @handle in Settings`}
               </span>
             </div>
           );
