@@ -14,7 +14,7 @@
 }
 .cal-btn:hover { color: var(--text-light); border-color: var(--blue-mid); }
 .cal-btn:active { transform: scale(0.97); }
-.cal-btn.primary { background: var(--blue); border-color: var(--blue); color: var(--text-light); }
+.cal-btn.primary { background: var(--blue); border-color: var(--blue); color: var(--text-on-blue); }
 .cal-btn.primary:hover { background: var(--blue-mid); }
 .cal-btn.approve { background: var(--green); border-color: var(--green); color: #fff; }
 .cal-btn.approve:hover { opacity: 0.9; }
@@ -80,7 +80,7 @@
 }
 .cal-view-btn:hover:not(.active) { border-color: var(--blue-mid); color: var(--text-light); }
 .cal-view-btn:active { transform: scale(0.97); }
-.cal-view-btn.active { background: var(--blue); border-color: var(--blue); color: var(--text-light); }
+.cal-view-btn.active { background: var(--blue); border-color: var(--blue); color: var(--text-on-blue); }
 
 .cal-platform-tabs { display: flex; gap: 4px; }
 .cal-plat-btn {

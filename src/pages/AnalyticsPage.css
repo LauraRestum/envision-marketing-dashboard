@@ -68,7 +68,7 @@
 }
 .idea-platforms { display: flex; gap: 6px; flex-wrap: wrap; }
 .idea-generate-btn {
-  padding: 10px 20px; background: var(--blue); color: var(--text-light);
+  padding: 10px 20px; background: var(--blue); color: var(--text-on-blue);
   font-weight: 700; font-size: 0.813rem; border-radius: var(--radius);
   align-self: flex-start; transition: all 0.18s ease;
 }

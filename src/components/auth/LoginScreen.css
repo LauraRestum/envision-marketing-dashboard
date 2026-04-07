@@ -54,7 +54,7 @@
   width: 100%;
   padding: 12px;
   background: var(--blue);
-  color: var(--text-light);
+  color: var(--text-on-blue);
   font-weight: 600;
   font-size: 0.875rem;
   letter-spacing: 0.04em;

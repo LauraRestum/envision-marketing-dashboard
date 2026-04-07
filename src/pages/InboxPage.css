@@ -449,7 +449,7 @@ body.dark-mode .detail-meta-strip:hover {
 .detail-btn.primary {
   background: var(--blue);
   border-color: var(--blue);
-  color: var(--text-light);
+  color: var(--text-on-blue);
 }
 
 .detail-btn.primary:hover:not(:disabled) {

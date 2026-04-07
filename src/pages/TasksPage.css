@@ -34,7 +34,7 @@
 .filter-btn.active {
   background: var(--blue);
   border-color: var(--blue);
-  color: var(--text-light);
+  color: var(--text-on-blue);
 }
 
 .filter-btn:hover:not(.active) {
@@ -490,7 +490,7 @@ body.dark-mode .task-card:hover {
   font-size: 0.688rem;
   font-weight: 600;
   background: var(--blue);
-  color: var(--text-light);
+  color: var(--text-on-blue);
   border-radius: var(--radius);
   transition: background 0.18s ease, transform 0.18s ease;
 }
@@ -599,7 +599,7 @@ body.dark-mode .modal-card {
 .modal-save {
   padding: 10px 20px;
   background: var(--blue);
-  color: var(--text-light);
+  color: var(--text-on-blue);
   font-weight: 600;
   font-size: 0.813rem;
   border-radius: var(--radius);

@@ -16,7 +16,7 @@
 .new-meeting-btn {
   padding: 8px 16px;
   background: var(--blue);
-  color: var(--text-light);
+  color: var(--text-on-blue);
   font-weight: 600;
   font-size: 0.813rem;
   border-radius: var(--radius);
