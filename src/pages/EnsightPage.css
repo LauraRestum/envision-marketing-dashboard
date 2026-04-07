@@ -1,0 +1,123 @@
+.ensight-page { max-width: 1200px; }
+.ensight-page h2 { font-size: 1.5rem; margin-bottom: 20px; }
+
+.ensight-loading {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 40vh; color: var(--text-muted); font-size: 0.875rem;
+}
+
+.ensight-panels {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start;
+}
+
+.issue-panel {
+  background: var(--surface-card); border: 1px solid var(--border-dark);
+  border-radius: var(--radius); padding: 20px;
+}
+.issue-panel-header { margin-bottom: 16px; }
+.issue-label {
+  font-size: 0.625rem; font-weight: 600; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--text-muted);
+}
+.issue-panel-header h3 { font-size: 1rem; margin-top: 2px; }
+
+/* Deadline timeline */
+.deadline-timeline {
+  display: flex; gap: 4px; margin-bottom: 20px; overflow-x: auto;
+}
+.deadline-item {
+  flex: 1; min-width: 80px; padding: 8px 6px; text-align: center;
+  background: rgba(255,255,255,0.02); border: 1px solid var(--border-dark);
+  border-radius: var(--radius);
+  display: flex; flex-direction: column; gap: 2px;
+}
+body.light-mode .deadline-item { background: rgba(0,24,82,0.02); }
+.deadline-item.past { opacity: 0.4; }
+.deadline-item.urgent { border-color: rgba(238,85,85,0.5); }
+.deadline-label {
+  font-size: 0.5rem; font-weight: 600; letter-spacing: 0.04em;
+  text-transform: uppercase; color: var(--text-muted);
+}
+.deadline-date { font-size: 0.688rem; font-weight: 600; }
+.deadline-countdown {
+  font-size: 0.625rem; color: var(--text-muted);
+}
+.deadline-item.urgent .deadline-countdown { color: #e55; font-weight: 600; }
+
+/* Story slots */
+.story-slots { display: flex; flex-direction: column; gap: 12px; }
+.story-slot {}
+.slot-label {
+  display: block; font-size: 0.625rem; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 6px;
+}
+.add-story-btn {
+  width: 100%; padding: 16px; font-size: 0.813rem; font-weight: 600;
+  color: var(--green); border: 1px dashed var(--border-dark);
+  border-radius: var(--radius); transition: all 0.15s;
+}
+.add-story-btn:hover { border-color: var(--green); background: var(--green-dim); }
+
+/* Story card */
+.story-card {
+  padding: 12px; border: 1px solid var(--border-dark);
+  border-radius: var(--radius); cursor: pointer;
+  transition: border-color 0.15s;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.story-card:hover { border-color: var(--blue-mid); }
+.story-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.story-card-title { font-size: 0.813rem; font-weight: 600; flex: 1; }
+.story-pillar-tag {
+  font-size: 0.5rem; font-weight: 700; letter-spacing: 0.04em;
+  text-transform: uppercase; padding: 2px 6px;
+  background: var(--green-dim); color: var(--green);
+  border-radius: 2px; flex-shrink: 0;
+}
+.story-card-meta { display: flex; gap: 8px; }
+.story-assignee, .story-source {
+  font-size: 0.688rem; color: var(--text-muted);
+}
+.story-card-stage { display: flex; }
+.stage-select {
+  font-size: 0.688rem; padding: 3px 6px;
+  background: transparent; border: 1px solid var(--border-dark);
+  border-radius: var(--radius); color: var(--text-light);
+}
+
+/* Platform rollout */
+.story-rollout { display: flex; align-items: center; gap: 4px; }
+.rollout-dot {
+  width: 20px; height: 20px; font-size: 0.5rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border-dark); border-radius: 2px;
+  color: var(--text-muted);
+}
+.rollout-dot.done { background: var(--green); color: #fff; border-color: var(--green); }
+.rollout-count { font-size: 0.625rem; color: var(--text-muted); margin-left: 4px; }
+
+/* Story drawer extras */
+.brief-section {
+  display: flex; flex-direction: column; gap: 6px;
+}
+.brief-field {
+  display: flex; align-items: center; gap: 8px;
+}
+.brief-key {
+  font-size: 0.688rem; font-weight: 600; color: var(--text-muted);
+  width: 50px; flex-shrink: 0;
+}
+.brief-field input { flex: 1; font-size: 0.75rem; padding: 4px 8px; }
+
+.rollout-toggles { display: flex; gap: 12px; margin-top: 4px; }
+.rollout-toggle {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 0.75rem; cursor: pointer; color: var(--text-light);
+}
+.rollout-toggle input { accent-color: var(--green); }
+
+@media (max-width: 768px) {
+  .ensight-panels { grid-template-columns: 1fr; }
+  .deadline-timeline { flex-wrap: wrap; }
+}
