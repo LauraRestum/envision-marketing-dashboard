@@ -25,9 +25,16 @@ export default async function handler(req, res) {
   const { type, submitterName, submitterEmail, subject, body } = req.body || {};
 
   // Validate required fields
-  if (!type || !submitterEmail || !body) {
+  if (!type || !body) {
     return res.status(400).json({
-      error: 'Missing required fields: type, submitterEmail, and body are required',
+      error: 'Missing required fields: type and body are required',
+    });
+  }
+
+  // Email is required for all types except event_request
+  if (!submitterEmail && type !== 'event_request') {
+    return res.status(400).json({
+      error: 'Missing required field: submitterEmail',
     });
   }
 
@@ -38,7 +45,7 @@ export default async function handler(req, res) {
   }
 
   // Basic email format check
-  if (!submitterEmail.includes('@')) {
+  if (submitterEmail && !submitterEmail.includes('@')) {
     return res.status(400).json({ error: 'Invalid email address' });
   }
 
@@ -48,7 +55,7 @@ export default async function handler(req, res) {
     const submission = {
       type,
       submitterName: submitterName || 'Anonymous',
-      submitterEmail,
+      submitterEmail: submitterEmail || '',
       subject: subject || '',
       body,
       status: 'new',
