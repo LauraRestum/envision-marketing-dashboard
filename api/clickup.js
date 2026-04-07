@@ -60,11 +60,17 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    // Cache the successful response
-    await db.collection('clickup_cache').doc(cacheKey).set({
-      data,
-      lastSynced: new Date().toISOString(),
-    });
+    // Cache the successful response (skip if Firebase not configured)
+    if (db) {
+      try {
+        await db.collection('clickup_cache').doc(cacheKey).set({
+          data,
+          lastSynced: new Date().toISOString(),
+        });
+      } catch (cacheErr) {
+        console.warn('Cache write skipped:', cacheErr.message);
+      }
+    }
 
     return res.status(200).json({
       ...data,
@@ -75,19 +81,21 @@ export default async function handler(req, res) {
     console.error('ClickUp API error:', err.message);
 
     // Fall back to cached data
-    try {
-      const cached = await db.collection('clickup_cache').doc(cacheKey).get();
-      if (cached.exists) {
-        const cachedData = cached.data();
-        return res.status(200).json({
-          ...cachedData.data,
-          _cached: true,
-          _lastSynced: cachedData.lastSynced,
-          _error: err.message || 'ClickUp connection unavailable. Showing cached data.',
-        });
+    if (db) {
+      try {
+        const cached = await db.collection('clickup_cache').doc(cacheKey).get();
+        if (cached.exists) {
+          const cachedData = cached.data();
+          return res.status(200).json({
+            ...cachedData.data,
+            _cached: true,
+            _lastSynced: cachedData.lastSynced,
+            _error: err.message || 'ClickUp connection unavailable. Showing cached data.',
+          });
+        }
+      } catch (cacheErr) {
+        console.error('Cache read error:', cacheErr);
       }
-    } catch (cacheErr) {
-      console.error('Cache read error:', cacheErr);
     }
 
     return res.status(502).json({
