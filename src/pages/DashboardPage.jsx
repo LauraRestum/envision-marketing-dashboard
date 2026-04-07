@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useTasks from '../hooks/useTasks';
 import useMeetings from '../hooks/useMeetings';
+import useSubmissions from '../hooks/useSubmissions';
 import useNotificationWriter from '../hooks/useNotificationWriter';
 import { useNotifications } from '../context/NotificationContext';
 import './DashboardPage.css';
@@ -19,6 +20,7 @@ export default function DashboardPage() {
     getOverdueTasks, getDueTodayTasks, getActiveTasks, getThisWeekCompleted,
   } = useTasks();
   const { meetings, loading: meetingsLoading, getNextMondaySync } = useMeetings();
+  const { submissions, loading: submissionsLoading } = useSubmissions();
   const { notifications, unreadCount } = useNotifications();
 
   // Write overdue task notifications to Firestore
@@ -32,16 +34,18 @@ export default function DashboardPage() {
   const needsAttention = useMemo(() => {
     const items = [];
     overdue.forEach((t) => items.push({ type: 'overdue', label: `Overdue: ${t.title}`, assignee: t.assignee, link: '/tasks' }));
+    const newInbox = submissions.filter((s) => s.status === 'new');
+    newInbox.slice(0, 3).forEach((s) => items.push({ type: 'inbox', label: `New ${s.type === 'story_submission' ? 'story' : s.type === 'contact' ? 'inquiry' : s.type === 'social_submission' ? 'social idea' : 'event request'} from ${s.submitterName}`, link: '/inbox' }));
     const unreadNotifs = notifications.filter((n) => !n.read);
     unreadNotifs.slice(0, 3).forEach((n) => items.push({ type: 'notification', label: n.message, link: '/' }));
     return items;
-  }, [overdue, notifications]);
+  }, [overdue, submissions, notifications]);
 
   const nextSync = useMemo(() => getNextMondaySync(), [meetings]);
 
   const recentMeetings = useMemo(() => meetings.slice(0, 3), [meetings]);
 
-  if (tasksLoading || meetingsLoading) {
+  if (tasksLoading || meetingsLoading || submissionsLoading) {
     return <div className="dash-loading">Loading dashboard...</div>;
   }
 
@@ -146,10 +150,25 @@ export default function DashboardPage() {
           <p className="bento-empty">Platform analytics will populate this in Phase 5.</p>
         </div>
 
-        {/* Inbox Preview placeholder */}
+        {/* Inbox Preview */}
         <div className="bento-card bento-inbox" onClick={() => navigate('/inbox')}>
           <h4 className="bento-label">Inbox Preview</h4>
-          <p className="bento-empty">No unread submissions. Inbox will be built in Phase 3.</p>
+          {(() => {
+            const unread = submissions.filter((s) => s.status === 'new').slice(0, 3);
+            if (unread.length === 0) return <p className="bento-empty">No unread submissions.</p>;
+            return (
+              <ul className="inbox-preview-list">
+                {unread.map((s) => (
+                  <li key={s.id} className="inbox-preview-item">
+                    <span className="inbox-preview-type">{
+                      { story_submission: 'Story', social_submission: 'Social', contact: 'Contact', event_request: 'Event' }[s.type] || s.type
+                    }</span>
+                    <span className="inbox-preview-name">{s.submitterName}</span>
+                  </li>
+                ))}
+              </ul>
+            );
+          })()}
         </div>
 
         {/* Next Team Sync */}

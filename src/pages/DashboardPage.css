@@ -205,6 +205,48 @@ body.light-mode .attention-item {
   color: var(--green);
 }
 
+.attention-type.inbox {
+  background: rgba(0, 75, 181, 0.2);
+  color: var(--blue-mid);
+}
+
+/* Inbox preview */
+.inbox-preview-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.inbox-preview-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-dark);
+}
+
+.inbox-preview-item:last-child {
+  border-bottom: none;
+}
+
+.inbox-preview-type {
+  font-size: 0.563rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  background: var(--green-dim);
+  color: var(--green);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.inbox-preview-name {
+  font-size: 0.813rem;
+  flex: 1;
+}
+
 .attention-label {
   font-size: 0.813rem;
   flex: 1;
