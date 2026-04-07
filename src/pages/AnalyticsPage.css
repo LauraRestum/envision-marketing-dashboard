@@ -33,8 +33,18 @@
 }
 .analytics-plat-name {
   font-size: 0.688rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  text-decoration: none;
 }
+.analytics-plat-name:hover { text-decoration: underline; }
 .analytics-follower-count { font-size: 1.5rem; font-weight: 800; }
+.analytics-follower-count.editable { cursor: pointer; }
+.analytics-follower-count.editable:hover { color: var(--blue-mid); }
+.analytics-edit-form { display: flex; }
+.analytics-edit-input {
+  width: 80px; text-align: center; font-size: 1.1rem; font-weight: 800;
+  padding: 2px 6px; border: 1px solid var(--blue-mid); border-radius: var(--radius);
+  background: var(--surface-card);
+}
 .analytics-plat-note { font-size: 0.625rem; color: var(--text-muted); font-style: italic; }
 
 .analytics-sections { display: flex; flex-direction: column; gap: 20px; }
@@ -58,7 +68,7 @@
 }
 .idea-platforms { display: flex; gap: 6px; flex-wrap: wrap; }
 .idea-generate-btn {
-  padding: 10px 20px; background: var(--blue); color: var(--text-light);
+  padding: 10px 20px; background: var(--blue); color: var(--text-on-blue);
   font-weight: 700; font-size: 0.813rem; border-radius: var(--radius);
   align-self: flex-start; transition: all 0.18s ease;
 }

@@ -23,7 +23,7 @@
 .clickup-refresh-btn {
   padding: 8px 16px;
   background: var(--blue);
-  color: var(--text-light);
+  color: var(--text-on-blue);
   font-weight: 600;
   font-size: 0.813rem;
   border-radius: var(--radius);
@@ -50,6 +50,13 @@
   border: 1px solid rgba(238, 85, 85, 0.3);
   border-radius: var(--radius);
   font-size: 0.813rem;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.clickup-debug {
+  font-size: 0.688rem; color: var(--text-muted);
+  white-space: pre-wrap; word-break: break-all;
+  margin: 0; padding: 8px;
+  background: rgba(0,0,0,0.05); border-radius: 4px;
   color: #e88;
   margin-bottom: 16px;
 }

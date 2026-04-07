@@ -5,7 +5,8 @@
   --green: #78BE21;
   --green-dim: rgba(120, 190, 33, 0.12);
   --text-light: #001852;
-  --text-muted: rgba(0, 24, 82, 0.55);
+  --text-muted: rgba(0, 24, 82, 0.7);
+  --text-on-blue: #ffffff;
   --bg-body: #ffffff;
   --surface-card: #ffffff;
   --border-dark: rgba(0, 24, 82, 0.08);
@@ -20,7 +21,8 @@ body.dark-mode {
   --bg-body: #000d2e;
   --surface-card: rgba(0, 24, 82, 0.52);
   --text-light: #f0f4ff;
-  --text-muted: rgba(240, 244, 255, 0.52);
+  --text-muted: rgba(240, 244, 255, 0.65);
+  --text-on-blue: #ffffff;
   --border-dark: rgba(255, 255, 255, 0.08);
   --green-dim: rgba(120, 190, 33, 0.15);
 }

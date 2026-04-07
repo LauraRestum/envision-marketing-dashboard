@@ -130,7 +130,7 @@ body.dark-mode .team-row:hover {
 .settings-btn {
   padding: 10px 20px;
   background: var(--blue);
-  color: var(--text-light);
+  color: var(--text-on-blue);
   font-weight: 600;
   font-size: 0.813rem;
   letter-spacing: 0.04em;

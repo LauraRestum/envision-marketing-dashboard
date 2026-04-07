@@ -28,6 +28,7 @@ export default function ClickUpPage() {
   const [cached, setCached] = useState(false);
   const [lastSynced, setLastSynced] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
+  const [debugInfo, setDebugInfo] = useState(null);
 
   const [filterAssignee, setFilterAssignee] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
@@ -35,20 +36,32 @@ export default function ClickUpPage() {
   const [search, setSearch] = useState('');
 
   const fetchTasks = useCallback(async () => {
+    setDebugInfo(null);
     try {
       // First get teams to find the team_id
       const teamsRes = await fetch('/api/clickup?action=teams');
-      const teamsData = await teamsRes.json();
+      const teamsText = await teamsRes.text();
+      let teamsData;
+      try {
+        teamsData = JSON.parse(teamsText);
+      } catch {
+        setError(`ClickUp API returned invalid response (HTTP ${teamsRes.status}).`);
+        setDebugInfo(`HTTP ${teamsRes.status}: ${teamsText.slice(0, 300)}`);
+        setLoading(false);
+        return;
+      }
 
       if (teamsData.error && !teamsData._cached) {
         setError(teamsData.error);
+        setDebugInfo(`Teams endpoint returned error: ${teamsData.error}`);
         setLoading(false);
         return;
       }
 
       const teams = teamsData.teams || [];
       if (teams.length === 0) {
-        setError('No ClickUp teams found. Check your API token.');
+        setError('No ClickUp teams found. Check your API token in Vercel.');
+        setDebugInfo('Teams response was OK but returned 0 teams. Your API token may not have access to any workspace.');
         setLoading(false);
         return;
       }
@@ -69,6 +82,7 @@ export default function ClickUpPage() {
       setLastSynced(tasksData._lastSynced || null);
     } catch (err) {
       setError('Failed to connect to ClickUp. Check your network.');
+      setDebugInfo(`Network error: ${err.message}`);
     }
     setLoading(false);
   }, []);
@@ -144,7 +158,8 @@ export default function ClickUpPage() {
 
       {error && (
         <div className="clickup-error-banner">
-          {error}
+          <strong>{error}</strong>
+          {debugInfo && <pre className="clickup-debug">{debugInfo}</pre>}
         </div>
       )}
 

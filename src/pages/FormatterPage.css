@@ -24,7 +24,7 @@
 .plat-toggle-all:hover { color: var(--text-light); border-color: var(--blue-mid); }
 .plat-toggle-all:active { transform: scale(0.96); }
 .formatter-generate-btn {
-  padding: 12px 24px; background: var(--blue); color: var(--text-light);
+  padding: 12px 24px; background: var(--blue); color: var(--text-on-blue);
   font-weight: 700; font-size: 0.875rem; letter-spacing: 0.04em;
   text-transform: uppercase; border-radius: var(--radius);
   align-self: flex-start; transition: all 0.18s ease;
@@ -71,7 +71,7 @@
 .result-btn:hover:not(:disabled) { color: var(--text-light); border-color: var(--blue-mid); }
 .result-btn:active:not(:disabled) { transform: scale(0.97); }
 .result-btn.primary {
-  background: var(--blue); border-color: var(--blue); color: var(--text-light);
+  background: var(--blue); border-color: var(--blue); color: var(--text-on-blue);
 }
 .result-btn.primary:hover { background: var(--blue-mid); }
 .result-btn:disabled { opacity: 0.5; }
