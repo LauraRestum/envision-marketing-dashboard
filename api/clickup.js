@@ -5,20 +5,35 @@
 import getAdminDb from './_db.js';
 
 const CLICKUP_BASE = 'https://api.clickup.com/api/v2';
+const API_TIMEOUT_MS = 15000; // 15 second timeout for ClickUp API calls
 
 async function clickupFetch(endpoint, token) {
-  // Try raw token first (personal API tokens), then Bearer format (OAuth tokens)
-  let response = await fetch(endpoint, {
-    headers: { 'Authorization': token, 'Content-Type': 'application/json' },
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
 
-  if (response.status === 401) {
-    response = await fetch(endpoint, {
-      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+  try {
+    // Try raw token first (personal API tokens), then Bearer format (OAuth tokens)
+    let response = await fetch(endpoint, {
+      headers: { 'Authorization': token, 'Content-Type': 'application/json' },
+      signal: controller.signal,
     });
-  }
 
-  return response;
+    if (response.status === 401) {
+      response = await fetch(endpoint, {
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        signal: controller.signal,
+      });
+    }
+
+    return response;
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      throw new Error(`ClickUp API timed out after ${API_TIMEOUT_MS / 1000}s calling ${endpoint}`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 export default async function handler(req, res) {
@@ -36,9 +51,9 @@ export default async function handler(req, res) {
 
   let endpoint;
   if (action === 'tasks' && team_id) {
-    endpoint = `${CLICKUP_BASE}/team/${team_id}/task?include_closed=true&subtasks=true&page=0`;
+    endpoint = `${CLICKUP_BASE}/team/${team_id}/task?include_closed=false&subtasks=true&page=0`;
   } else if (action === 'list_tasks' && list_id) {
-    endpoint = `${CLICKUP_BASE}/list/${list_id}/task?include_closed=true&subtasks=true`;
+    endpoint = `${CLICKUP_BASE}/list/${list_id}/task?include_closed=false&subtasks=true`;
   } else if (action === 'teams') {
     endpoint = `${CLICKUP_BASE}/team`;
   } else {

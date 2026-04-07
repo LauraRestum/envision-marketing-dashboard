@@ -40,15 +40,14 @@ export default function ClickUpPage() {
     setDebugInfo(null);
     setLoading(true);
 
-    // Abort if either request takes more than 12 seconds
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 12000);
-
     try {
-      // First get teams to find the Envision team
+      // Fetch teams with its own timeout
       let teamsRes;
       try {
-        teamsRes = await fetch('/api/clickup?action=teams', { signal: controller.signal });
+        const teamsController = new AbortController();
+        const teamsTimeout = setTimeout(() => teamsController.abort(), 20000);
+        teamsRes = await fetch('/api/clickup?action=teams', { signal: teamsController.signal });
+        clearTimeout(teamsTimeout);
       } catch (fetchErr) {
         if (fetchErr.name === 'AbortError') {
           setError('ClickUp request timed out. The API may be slow or unreachable from Vercel.');
@@ -56,7 +55,6 @@ export default function ClickUpPage() {
           setError(`Network error reaching ClickUp: ${fetchErr.message}`);
         }
         setLoading(false);
-        clearTimeout(timeout);
         return;
       }
 
@@ -68,7 +66,6 @@ export default function ClickUpPage() {
         setError(`ClickUp API returned invalid response (HTTP ${teamsRes.status}).`);
         setDebugInfo(`HTTP ${teamsRes.status}: ${teamsText.slice(0, 300)}`);
         setLoading(false);
-        clearTimeout(timeout);
         return;
       }
 
@@ -76,7 +73,6 @@ export default function ClickUpPage() {
         setError(teamsData.error);
         setDebugInfo(`Teams endpoint error: ${teamsData.error}`);
         setLoading(false);
-        clearTimeout(timeout);
         return;
       }
 
@@ -85,7 +81,6 @@ export default function ClickUpPage() {
         setError('No ClickUp teams found. Check your API token in Vercel settings.');
         setDebugInfo('Teams response was OK but returned 0 teams. Your API token may not have workspace access.');
         setLoading(false);
-        clearTimeout(timeout);
         return;
       }
 
@@ -93,10 +88,14 @@ export default function ClickUpPage() {
       const envisionTeam = teams.find((t) => t.name.toLowerCase().includes('envision'));
       const teamId = envisionTeam ? envisionTeam.id : teams[0].id;
 
+      // Fetch tasks with its own timeout
       let tasksData;
       try {
-        const tasksRes = await fetch(`/api/clickup?action=tasks&team_id=${teamId}`, { signal: controller.signal });
+        const tasksController = new AbortController();
+        const tasksTimeout = setTimeout(() => tasksController.abort(), 25000);
+        const tasksRes = await fetch(`/api/clickup?action=tasks&team_id=${teamId}`, { signal: tasksController.signal });
         tasksData = await tasksRes.json();
+        clearTimeout(tasksTimeout);
       } catch (fetchErr) {
         if (fetchErr.name === 'AbortError') {
           setError('ClickUp tasks request timed out.');
@@ -104,7 +103,6 @@ export default function ClickUpPage() {
           setError(`Failed to fetch tasks: ${fetchErr.message}`);
         }
         setLoading(false);
-        clearTimeout(timeout);
         return;
       }
 
@@ -123,7 +121,6 @@ export default function ClickUpPage() {
       setDebugInfo(err.stack?.slice(0, 400) || err.message);
     }
 
-    clearTimeout(timeout);
     setLoading(false);
   }, []);
 
