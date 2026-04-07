@@ -303,9 +303,227 @@ body.light-mode .attention-item {
   text-overflow: ellipsis;
 }
 
-/* Calendar placeholder */
+/* This Week on Social */
 .bento-calendar {
   grid-column: span 2;
+}
+
+.social-week-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.social-week-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-dark);
+  font-size: 0.813rem;
+}
+
+.social-week-item:last-child {
+  border-bottom: none;
+}
+
+.social-week-date {
+  font-size: 0.688rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  min-width: 48px;
+}
+
+.social-week-platforms {
+  font-size: 0.563rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  background: rgba(0, 75, 181, 0.2);
+  color: var(--blue-mid);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.social-week-copy {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.social-week-status {
+  font-size: 0.563rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.social-week-status.status-draft {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-muted);
+}
+
+.social-week-status.status-needs_approval {
+  background: rgba(240, 160, 48, 0.15);
+  color: #f0a030;
+}
+
+.social-week-status.status-approved {
+  background: var(--green-dim);
+  color: var(--green);
+}
+
+.social-week-status.status-scheduled {
+  background: rgba(0, 75, 181, 0.2);
+  color: var(--blue-mid);
+}
+
+.social-week-status.status-published {
+  background: var(--green-dim);
+  color: var(--green);
+}
+
+.social-week-more {
+  font-size: 0.688rem;
+  color: var(--text-muted);
+  padding-top: 4px;
+}
+
+/* Ensight Countdown */
+.ensight-countdown-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ensight-days-left {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.ensight-days-number {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--green);
+}
+
+.ensight-days-label {
+  font-size: 0.813rem;
+  color: var(--text-muted);
+}
+
+.ensight-month-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.ensight-story-summary {
+  font-size: 0.813rem;
+  font-weight: 500;
+}
+
+.ensight-stage-list {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ensight-stage-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ensight-stage-badge {
+  font-size: 0.563rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 2px;
+}
+
+.ensight-stage-badge.stage-draft {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-muted);
+}
+
+.ensight-stage-badge.stage-review {
+  background: rgba(240, 160, 48, 0.15);
+  color: #f0a030;
+}
+
+.ensight-stage-badge.stage-approved {
+  background: var(--green-dim);
+  color: var(--green);
+}
+
+.ensight-stage-badge.stage-published {
+  background: rgba(0, 75, 181, 0.2);
+  color: var(--blue-mid);
+}
+
+.ensight-stage-count {
+  font-size: 0.688rem;
+  color: var(--text-muted);
+}
+
+/* Analytics Pulse */
+.analytics-pulse-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.analytics-pulse-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-dark);
+}
+
+.analytics-pulse-item:last-child {
+  border-bottom: none;
+}
+
+.analytics-pulse-name {
+  font-size: 0.813rem;
+  font-weight: 500;
+  min-width: 72px;
+}
+
+.analytics-pulse-followers {
+  font-size: 0.813rem;
+  flex: 1;
+}
+
+.analytics-pulse-synced {
+  font-size: 0.688rem;
+  color: var(--green);
+  flex: 1;
+}
+
+.analytics-pulse-none {
+  font-size: 0.688rem;
+  color: var(--text-muted);
+  flex: 1;
+}
+
+.analytics-pulse-time {
+  font-size: 0.625rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
 }
 
 /* Sync card */
