@@ -1,0 +1,343 @@
+.dashboard-page {
+  max-width: 1200px;
+}
+
+.dash-greeting {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+}
+
+.dash-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40vh;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+/* Today strip */
+.today-strip {
+  background: var(--surface-card);
+  border: 1px solid var(--border-dark);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.today-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.today-header h3 {
+  font-size: 1rem;
+}
+
+.today-date {
+  font-size: 0.813rem;
+  color: var(--text-muted);
+}
+
+.today-empty {
+  font-size: 0.813rem;
+  color: var(--text-muted);
+  padding: 8px 0;
+}
+
+.today-items {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.today-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-dark);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+body.light-mode .today-item {
+  background: rgba(0, 24, 82, 0.02);
+}
+
+.today-item:hover {
+  border-color: var(--blue-mid);
+}
+
+.today-item.overdue {
+  border-color: rgba(238, 85, 85, 0.4);
+}
+
+.today-priority-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.today-task-name {
+  flex: 1;
+  font-size: 0.813rem;
+  font-weight: 500;
+}
+
+.today-assignee {
+  width: 24px;
+  height: 24px;
+  background: var(--blue);
+  color: var(--green);
+  font-size: 0.625rem;
+  font-weight: 700;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.today-source {
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.today-due {
+  font-size: 0.688rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.today-due.overdue-text {
+  color: #e55;
+  font-weight: 600;
+}
+
+/* Bento grid */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: auto;
+  gap: 16px;
+}
+
+.bento-card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-dark);
+  border-radius: var(--radius);
+  padding: 20px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.bento-card:hover {
+  border-color: var(--blue-mid);
+}
+
+.bento-label {
+  font-size: 0.688rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.bento-empty {
+  font-size: 0.813rem;
+  color: var(--text-muted);
+}
+
+/* Needs Attention card - spans full width */
+.bento-attention {
+  grid-column: 1 / -1;
+}
+
+.attention-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.attention-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-dark);
+  border-radius: var(--radius);
+}
+
+body.light-mode .attention-item {
+  background: rgba(0, 24, 82, 0.02);
+}
+
+.attention-type {
+  font-size: 0.563rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.attention-type.overdue {
+  background: rgba(238, 85, 85, 0.15);
+  color: #e55;
+}
+
+.attention-type.notification {
+  background: var(--green-dim);
+  color: var(--green);
+}
+
+.attention-label {
+  font-size: 0.813rem;
+  flex: 1;
+}
+
+/* Person cards */
+.bento-person {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bento-person-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bento-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.75rem;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.bento-person-name {
+  display: block;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.bento-person-count {
+  display: block;
+  font-size: 0.688rem;
+  color: var(--text-muted);
+}
+
+.bento-person-stat {
+  font-size: 0.688rem;
+  color: var(--text-muted);
+}
+
+.bento-person-next {
+  font-size: 0.688rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Calendar placeholder */
+.bento-calendar {
+  grid-column: span 2;
+}
+
+/* Sync card */
+.sync-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sync-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.sync-date {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.sync-attendees {
+  font-size: 0.688rem;
+  color: var(--text-muted);
+}
+
+/* Recent meetings */
+.recent-meetings-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.recent-meeting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-dark);
+}
+
+.recent-meeting-item:last-child {
+  border-bottom: none;
+}
+
+.recent-meeting-title {
+  font-size: 0.813rem;
+  font-weight: 500;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recent-meeting-date {
+  font-size: 0.688rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .bento-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bento-calendar {
+    grid-column: span 1;
+  }
+
+  .today-item {
+    flex-wrap: wrap;
+  }
+
+  .today-source {
+    display: none;
+  }
+}

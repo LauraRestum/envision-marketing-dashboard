@@ -1,0 +1,464 @@
+.meetings-page {
+  max-width: 1200px;
+}
+
+.meetings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.meetings-header h2 {
+  font-size: 1.5rem;
+}
+
+.new-meeting-btn {
+  padding: 8px 16px;
+  background: var(--blue);
+  color: var(--text-light);
+  font-weight: 600;
+  font-size: 0.813rem;
+  border-radius: var(--radius);
+}
+
+.new-meeting-btn:hover {
+  background: var(--blue-mid);
+}
+
+.meetings-toolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.meetings-search {
+  flex: 1;
+  min-width: 200px;
+  padding: 8px 12px;
+  font-size: 0.813rem;
+}
+
+.meetings-filter {
+  padding: 8px 12px;
+  font-size: 0.813rem;
+  min-width: 140px;
+}
+
+.meetings-layout {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+/* Meeting list */
+.meetings-list {
+  background: var(--surface-card);
+  border: 1px solid var(--border-dark);
+  border-radius: var(--radius);
+  overflow-y: auto;
+  max-height: calc(100vh - 220px);
+}
+
+.meetings-empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.813rem;
+}
+
+.meeting-row {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-dark);
+  transition: background 0.1s;
+  gap: 4px;
+}
+
+.meeting-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+body.light-mode .meeting-row:hover {
+  background: rgba(0, 24, 82, 0.03);
+}
+
+.meeting-row.active {
+  background: rgba(0, 48, 135, 0.2);
+  border-left: 3px solid var(--green);
+}
+
+body.light-mode .meeting-row.active {
+  background: rgba(0, 48, 135, 0.06);
+}
+
+.meeting-row-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.meeting-row-title {
+  font-size: 0.813rem;
+  font-weight: 600;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.meeting-row-date {
+  font-size: 0.688rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.meeting-row-bottom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.meeting-row-attendees {
+  font-size: 0.688rem;
+  color: var(--text-muted);
+}
+
+.meeting-row-tags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.tag-chip {
+  font-size: 0.563rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  background: var(--green-dim);
+  color: var(--green);
+  border-radius: 2px;
+}
+
+/* Detail panel */
+.meetings-detail {
+  background: var(--surface-card);
+  border: 1px solid var(--border-dark);
+  border-radius: var(--radius);
+  min-height: 300px;
+}
+
+.detail-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  color: var(--text-muted);
+  font-size: 0.813rem;
+}
+
+.detail-view, .detail-edit {
+  padding: 24px;
+}
+
+.detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 16px;
+}
+
+.detail-header h3 {
+  font-size: 1.125rem;
+  margin-bottom: 4px;
+}
+
+.detail-date {
+  font-size: 0.813rem;
+  color: var(--text-muted);
+}
+
+.detail-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.detail-action-btn {
+  padding: 5px 12px;
+  font-size: 0.688rem;
+  font-weight: 600;
+  border: 1px solid var(--border-dark);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+}
+
+.detail-action-btn:hover {
+  color: var(--text-light);
+  border-color: var(--blue-mid);
+}
+
+.detail-action-btn.danger:hover {
+  color: #e55;
+  border-color: #e55;
+}
+
+.detail-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.detail-attendees {
+  display: flex;
+  gap: 4px;
+}
+
+.attendee-pill {
+  font-size: 0.688rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  background: rgba(0, 48, 135, 0.3);
+  border-radius: var(--radius);
+}
+
+body.light-mode .attendee-pill {
+  background: rgba(0, 48, 135, 0.08);
+}
+
+.detail-tags {
+  display: flex;
+  gap: 4px;
+}
+
+.detail-section {
+  margin-bottom: 20px;
+}
+
+.detail-section h4 {
+  font-size: 0.688rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.detail-agenda-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-agenda-list li {
+  font-size: 0.813rem;
+  padding: 4px 0;
+  padding-left: 12px;
+  border-left: 2px solid var(--border-dark);
+}
+
+.detail-notes {
+  font-size: 0.813rem;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+/* Action items */
+.action-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.action-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-dark);
+  border-radius: var(--radius);
+}
+
+body.light-mode .action-item {
+  background: rgba(0, 24, 82, 0.02);
+}
+
+.action-item.done {
+  opacity: 0.5;
+}
+
+.action-check {
+  flex-shrink: 0;
+  padding: 0;
+  line-height: 0;
+  color: var(--text-muted);
+}
+
+.action-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.action-task-text {
+  font-size: 0.813rem;
+}
+
+.action-meta {
+  font-size: 0.688rem;
+  color: var(--text-muted);
+}
+
+.send-to-tasks-btn {
+  flex-shrink: 0;
+  padding: 4px;
+  color: var(--text-muted);
+  border-radius: var(--radius);
+}
+
+.send-to-tasks-btn:hover {
+  color: var(--green);
+  background: var(--green-dim);
+}
+
+/* Edit form */
+.detail-edit-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.detail-edit-header h3 {
+  font-size: 1.125rem;
+}
+
+.detail-edit-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.detail-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.attendee-checks {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.attendee-check {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.813rem;
+  font-weight: 400;
+  color: var(--text-light);
+  cursor: pointer;
+}
+
+.attendee-check input[type="checkbox"] {
+  accent-color: var(--green);
+}
+
+.action-item-edit {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.action-task-input {
+  flex: 2;
+  min-width: 120px;
+  font-size: 0.75rem;
+  padding: 6px 8px;
+}
+
+.action-assignee-select {
+  flex: 1;
+  min-width: 80px;
+  font-size: 0.75rem;
+  padding: 6px 8px;
+}
+
+.action-due-input {
+  flex: 1;
+  min-width: 100px;
+  font-size: 0.75rem;
+  padding: 6px 8px;
+}
+
+.action-remove-btn {
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  border: 1px solid var(--border-dark);
+  border-radius: var(--radius);
+}
+
+.action-remove-btn:hover {
+  color: #e55;
+  border-color: #e55;
+}
+
+.add-action-btn {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--green);
+  padding: 6px 0;
+  margin-top: 4px;
+}
+
+.add-action-btn:hover {
+  text-decoration: underline;
+}
+
+.modal-large {
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.meetings-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40vh;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+  .meetings-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .meetings-list {
+    max-height: 300px;
+  }
+
+  .meetings-toolbar {
+    flex-direction: column;
+  }
+
+  .action-item-edit {
+    flex-direction: column;
+  }
+}
