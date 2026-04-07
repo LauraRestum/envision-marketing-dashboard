@@ -1,7 +1,7 @@
 .analytics-page { max-width: 1200px; }
 .analytics-page h2 { font-size: 1.5rem; margin-bottom: 20px; }
 
-/* Platform summary strip */
+/* ── Platform summary strip ── */
 .analytics-platforms {
   display: grid; grid-template-columns: repeat(4, 1fr);
   gap: 12px; margin-bottom: 24px;
@@ -10,22 +10,29 @@
   background: var(--surface-card); border: 1px solid var(--border-dark);
   border-radius: var(--radius); padding: 20px;
   display: flex; flex-direction: column; gap: 6px; text-align: center;
+  transition: border-color 0.18s ease, transform 0.18s ease;
+}
+.analytics-platform-card:hover {
+  border-color: var(--blue-mid);
+  transform: translateY(-1px);
 }
 .analytics-plat-name {
   font-size: 0.688rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
 }
 .analytics-follower-count { font-size: 1.5rem; font-weight: 800; }
-.analytics-plat-note { font-size: 0.625rem; color: var(--text-muted); }
+.analytics-plat-note { font-size: 0.625rem; color: var(--text-muted); font-style: italic; }
 
-.analytics-sections { display: flex; flex-direction: column; gap: 24px; }
+.analytics-sections { display: flex; flex-direction: column; gap: 20px; }
 .analytics-section {
   background: var(--surface-card); border: 1px solid var(--border-dark);
   border-radius: var(--radius); padding: 24px;
+  transition: border-color 0.18s ease;
 }
+.analytics-section:hover { border-color: rgba(255,255,255,0.12); }
 .analytics-section h3 { font-size: 1rem; margin-bottom: 16px; }
-.analytics-placeholder { font-size: 0.813rem; color: var(--text-muted); }
+.analytics-placeholder { font-size: 0.813rem; color: var(--text-muted); font-style: italic; }
 
-/* Idea Generator */
+/* ── Idea Generator ── */
 .idea-input-area {
   display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;
 }
@@ -38,9 +45,10 @@
 .idea-generate-btn {
   padding: 10px 20px; background: var(--blue); color: var(--text-light);
   font-weight: 700; font-size: 0.813rem; border-radius: var(--radius);
-  align-self: flex-start;
+  align-self: flex-start; transition: all 0.18s ease;
 }
 .idea-generate-btn:hover:not(:disabled) { background: var(--blue-mid); }
+.idea-generate-btn:active:not(:disabled) { transform: scale(0.97); }
 .idea-generate-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .idea-error {
   padding: 8px 12px; background: rgba(238,85,85,0.1);
@@ -48,7 +56,7 @@
   font-size: 0.813rem; color: #e88; margin-bottom: 12px;
 }
 
-/* Idea cards */
+/* ── Idea cards ── */
 .idea-results {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 12px;
@@ -56,7 +64,14 @@
 .idea-card {
   border: 1px solid var(--border-dark); border-radius: var(--radius);
   padding: 16px; display: flex; flex-direction: column; gap: 8px;
+  transition: border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
 }
+.idea-card:hover {
+  border-color: var(--blue-mid);
+  background: rgba(255,255,255,0.02);
+  transform: translateY(-1px);
+}
+body.light-mode .idea-card:hover { background: rgba(0,24,82,0.02); }
 .idea-card-header { display: flex; gap: 6px; flex-wrap: wrap; }
 .idea-platform-tag {
   font-size: 0.563rem; font-weight: 700; letter-spacing: 0.04em;
@@ -79,10 +94,37 @@ body.light-mode .idea-format-tag { background: rgba(0,24,82,0.06); }
 .idea-add-btn {
   font-size: 0.688rem; font-weight: 600; color: var(--green);
   padding: 4px 0; align-self: flex-start;
+  transition: opacity 0.18s ease;
 }
 .idea-add-btn:hover { text-decoration: underline; }
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+  .analytics-platforms { grid-template-columns: repeat(2, 1fr); }
+}
 
 @media (max-width: 768px) {
   .analytics-platforms { grid-template-columns: 1fr 1fr; }
   .idea-results { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 375px) {
+  .analytics-platforms { grid-template-columns: 1fr; }
+  .analytics-platform-card { padding: 14px; }
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .analytics-platform-card,
+  .analytics-section,
+  .idea-card,
+  .idea-generate-btn,
+  .idea-add-btn {
+    transition: none;
+  }
+
+  .analytics-platform-card:hover,
+  .idea-card:hover {
+    transform: none;
+  }
 }

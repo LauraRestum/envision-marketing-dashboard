@@ -4,7 +4,7 @@
 
 .settings-page h2 {
   font-size: 1.5rem;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
 .settings-section {
@@ -12,7 +12,12 @@
   border: 1px solid var(--border-dark);
   border-radius: var(--radius);
   padding: 24px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
+  transition: border-color 0.18s ease;
+}
+
+.settings-section:hover {
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .settings-section h3 {
@@ -42,6 +47,11 @@
 .settings-label input[type="text"],
 .settings-label input[type="password"] {
   margin-top: 2px;
+  transition: border-color 0.18s ease;
+}
+
+.settings-label input:hover {
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .team-row {
@@ -50,6 +60,19 @@
   gap: 16px;
   padding-bottom: 16px;
   border-bottom: 1px solid var(--border-dark);
+  transition: background 0.18s ease;
+}
+
+.team-row:hover {
+  background: rgba(255, 255, 255, 0.02);
+  margin: 0 -12px;
+  padding-left: 12px;
+  padding-right: 12px;
+  border-radius: var(--radius);
+}
+
+body.light-mode .team-row:hover {
+  background: rgba(0, 24, 82, 0.02);
 }
 
 .team-row:last-of-type {
@@ -68,6 +91,11 @@
   color: #fff;
   flex-shrink: 0;
   margin-top: 4px;
+  transition: transform 0.18s ease;
+}
+
+.team-row:hover .team-avatar {
+  transform: scale(1.08);
 }
 
 .team-fields {
@@ -88,6 +116,11 @@
   padding: 2px;
   border: 1px solid var(--border-dark);
   cursor: pointer;
+  transition: border-color 0.18s ease;
+}
+
+.color-input:hover {
+  border-color: var(--blue-mid);
 }
 
 .pw-form {
@@ -103,12 +136,16 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
   border-radius: var(--radius);
-  transition: background 0.15s;
+  transition: all 0.18s ease;
   align-self: flex-start;
 }
 
 .settings-btn:hover:not(:disabled) {
   background: var(--blue-mid);
+}
+
+.settings-btn:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
 .settings-btn:disabled {
@@ -123,6 +160,7 @@
 
 .settings-btn.secondary:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.04);
+  border-color: var(--blue-mid);
 }
 
 .settings-msg {
@@ -156,10 +194,20 @@
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--border-dark);
   border-radius: var(--radius);
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+
+.integration-card:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 body.light-mode .integration-card {
   background: rgba(0, 24, 82, 0.02);
+}
+
+body.light-mode .integration-card:hover {
+  background: rgba(0, 24, 82, 0.04);
 }
 
 .integration-header {
@@ -199,6 +247,7 @@ body.light-mode .integration-card {
   color: var(--blue-mid);
   text-align: left;
   padding: 0;
+  transition: opacity 0.18s ease;
 }
 
 .test-btn:hover {
@@ -209,4 +258,43 @@ body.light-mode .integration-card {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .team-fields {
+    flex-direction: column;
+  }
+
+  .integrations-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .data-actions {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 375px) {
+  .settings-section {
+    padding: 16px;
+  }
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .settings-section,
+  .settings-btn,
+  .team-row,
+  .team-avatar,
+  .color-input,
+  .integration-card,
+  .test-btn,
+  .settings-label input {
+    transition: none;
+  }
+
+  .team-row:hover .team-avatar {
+    transform: none;
+  }
 }
