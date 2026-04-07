@@ -33,7 +33,9 @@
 }
 .analytics-plat-name {
   font-size: 0.688rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  text-decoration: none;
 }
+.analytics-plat-name:hover { text-decoration: underline; }
 .analytics-follower-count { font-size: 1.5rem; font-weight: 800; }
 .analytics-follower-count.editable { cursor: pointer; }
 .analytics-follower-count.editable:hover { color: var(--blue-mid); }
