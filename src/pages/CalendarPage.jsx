@@ -42,6 +42,15 @@ export default function CalendarPage() {
     return posts.filter((p) => (p.platforms || []).includes(platformFilter));
   }, [posts, platformFilter]);
 
+  // KPI data
+  const kpi = useMemo(() => {
+    const drafts = posts.filter((p) => p.status === 'draft').length;
+    const pending = posts.filter((p) => p.status === 'needs_approval').length;
+    const scheduled = posts.filter((p) => p.status === 'scheduled' || p.status === 'approved').length;
+    const published = posts.filter((p) => p.status === 'published').length;
+    return { drafts, pending, scheduled, published, total: posts.length };
+  }, [posts]);
+
   function openNewPost(dateStr) {
     setEditingPost(null);
     setDrawerDate(dateStr || '');
@@ -79,7 +88,12 @@ export default function CalendarPage() {
   }
 
   if (postsLoading || campsLoading) {
-    return <div className="cal-loading">Loading calendar...</div>;
+    return (
+      <div className="cal-loading">
+        <div className="cal-loading-spinner" />
+        <span>Loading calendar...</span>
+      </div>
+    );
   }
 
   const monthName = new Date(currentMonth.year, currentMonth.month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
@@ -89,21 +103,41 @@ export default function CalendarPage() {
       <div className="cal-header">
         <h2>Content Calendar</h2>
         <div className="cal-actions">
-          <button className="cal-btn primary" onClick={() => openNewPost('')}>+ New Post</button>
-          <button className="cal-btn" onClick={() => setShowCampaignModal(true)}>+ Campaign</button>
+          <button className="cal-btn primary" onClick={() => openNewPost('')} title="Create a new social media post">+ New Post</button>
+          <button className="cal-btn" onClick={() => setShowCampaignModal(true)} title="Create a new campaign to group related posts">+ Campaign</button>
+        </div>
+      </div>
+
+      {/* KPI Strip */}
+      <div className="cal-kpi-strip">
+        <div className="cal-kpi" title={`${kpi.drafts} post${kpi.drafts !== 1 ? 's' : ''} still in draft`}>
+          <span className="cal-kpi-value">{kpi.drafts}</span>
+          <span className="cal-kpi-label">Drafts</span>
+        </div>
+        <div className={`cal-kpi ${kpi.pending > 0 ? 'kpi-attention' : ''}`} title={`${kpi.pending} post${kpi.pending !== 1 ? 's' : ''} awaiting approval`}>
+          <span className="cal-kpi-value">{kpi.pending}</span>
+          <span className="cal-kpi-label">Needs Approval</span>
+        </div>
+        <div className="cal-kpi" title={`${kpi.scheduled} post${kpi.scheduled !== 1 ? 's' : ''} approved or scheduled`}>
+          <span className="cal-kpi-value">{kpi.scheduled}</span>
+          <span className="cal-kpi-label">Scheduled</span>
+        </div>
+        <div className="cal-kpi kpi-positive" title={`${kpi.published} post${kpi.published !== 1 ? 's' : ''} published`}>
+          <span className="cal-kpi-value">{kpi.published}</span>
+          <span className="cal-kpi-label">Published</span>
         </div>
       </div>
 
       <div className="cal-toolbar">
         <div className="cal-views">
-          <button className={`cal-view-btn ${view === 'month' ? 'active' : ''}`} onClick={() => setView('month')}>Month</button>
-          <button className={`cal-view-btn ${view === 'list' ? 'active' : ''}`} onClick={() => setView('list')}>List</button>
-          <button className={`cal-view-btn ${view === 'campaign' ? 'active' : ''}`} onClick={() => setView('campaign')}>Campaigns</button>
+          <button className={`cal-view-btn ${view === 'month' ? 'active' : ''}`} onClick={() => setView('month')} title="Month grid view">Month</button>
+          <button className={`cal-view-btn ${view === 'list' ? 'active' : ''}`} onClick={() => setView('list')} title="Chronological list view">List</button>
+          <button className={`cal-view-btn ${view === 'campaign' ? 'active' : ''}`} onClick={() => setView('campaign')} title="View posts grouped by campaign">Campaigns</button>
         </div>
         <div className="cal-platform-tabs">
-          <button className={`cal-plat-btn ${platformFilter === '' ? 'active' : ''}`} onClick={() => setPlatformFilter('')}>All</button>
+          <button className={`cal-plat-btn ${platformFilter === '' ? 'active' : ''}`} onClick={() => setPlatformFilter('')} title="Show posts for all platforms">All</button>
           {PLATFORMS.map((p) => (
-            <button key={p.key} className={`cal-plat-btn ${platformFilter === p.key ? 'active' : ''}`} onClick={() => setPlatformFilter(p.key)}>{p.label}</button>
+            <button key={p.key} className={`cal-plat-btn ${platformFilter === p.key ? 'active' : ''}`} onClick={() => setPlatformFilter(p.key)} title={`Filter to ${p.label} posts only`}>{p.label}</button>
           ))}
         </div>
       </div>
@@ -186,9 +220,9 @@ function MonthGrid({ year, month, posts, monthName, onPrev, onNext, onDayClick, 
   return (
     <div className="month-grid-wrapper">
       <div className="month-nav">
-        <button className="month-nav-btn" onClick={onPrev}>&lt;</button>
+        <button className="month-nav-btn" onClick={onPrev} title="Previous month">&lt;</button>
         <span className="month-name">{monthName}</span>
-        <button className="month-nav-btn" onClick={onNext}>&gt;</button>
+        <button className="month-nav-btn" onClick={onNext} title="Next month">&gt;</button>
       </div>
       <div className="month-grid">
         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
@@ -202,13 +236,14 @@ function MonthGrid({ year, month, posts, monthName, onPrev, onNext, onDayClick, 
           return (
             <div
               key={day}
-              className={`month-cell ${isToday ? 'today' : ''}`}
+              className={`month-cell ${isToday ? 'today' : ''} ${dayPosts.length > 0 ? 'has-posts' : ''}`}
               onClick={() => onDayClick(dateStr)}
+              title={dayPosts.length > 0 ? `${dayPosts.length} post${dayPosts.length !== 1 ? 's' : ''} scheduled — Click to add` : 'Click to add a post'}
             >
               <span className="month-cell-day">{day}</span>
               <div className="month-cell-posts">
                 {dayPosts.slice(0, 4).map((p) => (
-                  <div key={p.id} className="month-post-chips" onClick={(e) => { e.stopPropagation(); onPostClick(p); }}>
+                  <div key={p.id} className="month-post-chips" onClick={(e) => { e.stopPropagation(); onPostClick(p); }} title={p.copy ? p.copy.slice(0, 60) : '(no copy)'}>
                     {(p.platforms || []).map((plat) => (
                       <PlatformChip key={plat} platform={plat} />
                     ))}
@@ -228,7 +263,12 @@ function ListView({ posts, campaigns, onPostClick }) {
   const upcoming = posts.filter((p) => p.status !== 'published').sort((a, b) => (a.scheduledDate || '').localeCompare(b.scheduledDate || ''));
 
   if (upcoming.length === 0) {
-    return <div className="cal-empty">No upcoming posts scheduled.</div>;
+    return (
+      <div className="cal-empty">
+        <p className="cal-empty-text">No upcoming posts scheduled.</p>
+        <p className="cal-empty-hint">Click "+ New Post" to create your first social post.</p>
+      </div>
+    );
   }
 
   return (
@@ -236,7 +276,7 @@ function ListView({ posts, campaigns, onPostClick }) {
       {upcoming.map((p) => {
         const camp = campaigns.find((c) => c.slug === p.campaign || c.name === p.campaign);
         return (
-          <button key={p.id} className="list-row" onClick={() => onPostClick(p)}>
+          <button key={p.id} className="list-row" onClick={() => onPostClick(p)} title={p.copy ? p.copy.slice(0, 100) : '(no copy)'}>
             <div className="list-row-left">
               <div className="list-plat-chips">
                 {(p.platforms || []).map((plat) => <PlatformChip key={plat} platform={plat} />)}
@@ -244,10 +284,10 @@ function ListView({ posts, campaigns, onPostClick }) {
               <div className="list-row-copy">{p.copy ? p.copy.slice(0, 80) + (p.copy.length > 80 ? '...' : '') : '(no copy)'}</div>
             </div>
             <div className="list-row-right">
-              {camp && <span className="list-campaign-tag" style={{ borderColor: camp.color }}>{camp.name}</span>}
+              {camp && <span className="list-campaign-tag" style={{ borderColor: camp.color }} title={`Campaign: ${camp.name}`}>{camp.name}</span>}
               <span className={`list-status ${p.status}`}>{STATUS_LABELS[p.status]}</span>
               <span className="list-date">{p.scheduledDate ? formatDate(p.scheduledDate) : 'No date'}</span>
-              {p.assignedTo && <span className="list-assignee">{p.assignedTo.charAt(0).toUpperCase()}</span>}
+              {p.assignedTo && <span className="list-assignee" title={p.assignedTo.charAt(0).toUpperCase() + p.assignedTo.slice(1)}>{p.assignedTo.charAt(0).toUpperCase()}</span>}
             </div>
           </button>
         );
@@ -258,7 +298,12 @@ function ListView({ posts, campaigns, onPostClick }) {
 
 function CampaignView({ campaigns, posts, onPostClick }) {
   if (campaigns.length === 0) {
-    return <div className="cal-empty">No campaigns created yet. Create one to group related posts.</div>;
+    return (
+      <div className="cal-empty">
+        <p className="cal-empty-text">No campaigns created yet.</p>
+        <p className="cal-empty-hint">Create a campaign to group related posts and track content themes.</p>
+      </div>
+    );
   }
 
   return (
@@ -272,14 +317,14 @@ function CampaignView({ campaigns, posts, onPostClick }) {
               <span className="campaign-lane-dates">
                 {c.startDate && formatDate(c.startDate)} {c.endDate && ` \u2013 ${formatDate(c.endDate)}`}
               </span>
-              <span className="campaign-lane-count">{campPosts.length} posts</span>
+              <span className="campaign-lane-count">{campPosts.length} post{campPosts.length !== 1 ? 's' : ''}</span>
             </div>
             <div className="campaign-lane-posts">
               {campPosts.length === 0 ? (
-                <span className="campaign-lane-empty">No posts in this campaign yet.</span>
+                <span className="campaign-lane-empty">No posts in this campaign yet. Assign posts from the post editor.</span>
               ) : (
                 campPosts.map((p) => (
-                  <button key={p.id} className="campaign-post-card" onClick={() => onPostClick(p)}>
+                  <button key={p.id} className="campaign-post-card" onClick={() => onPostClick(p)} title={p.copy ? p.copy.slice(0, 80) : '(no copy)'}>
                     <div className="campaign-post-chips">
                       {(p.platforms || []).map((plat) => <PlatformChip key={plat} platform={plat} />)}
                     </div>
@@ -338,7 +383,7 @@ function PostDrawer({ post, defaultDate, campaigns, onSave, onDelete, onClose, o
       <div className="post-drawer" onClick={(e) => e.stopPropagation()}>
         <div className="post-drawer-header">
           <h3>{post ? 'Edit Post' : 'New Post'}</h3>
-          <button className="drawer-close" onClick={onClose}>x</button>
+          <button className="drawer-close" onClick={onClose} title="Close drawer">x</button>
         </div>
 
         <form onSubmit={handleSubmit} className="post-drawer-form">
@@ -351,6 +396,7 @@ function PostDrawer({ post, defaultDate, campaigns, onSave, onDelete, onClose, o
                   type="button"
                   className={`plat-toggle ${platforms.includes(p.key) ? 'active' : ''}`}
                   onClick={() => togglePlatform(p.key)}
+                  title={`Toggle ${p.label}`}
                 >
                   {p.label}
                 </button>
@@ -416,10 +462,10 @@ function PostDrawer({ post, defaultDate, campaigns, onSave, onDelete, onClose, o
           <div className="post-drawer-actions">
             <button type="submit" className="cal-btn primary">{post ? 'Save Changes' : 'Create Post'}</button>
             {post && status === 'needs_approval' && onApprove && (
-              <button type="button" className="cal-btn approve" onClick={() => onApprove('laura')}>Approve</button>
+              <button type="button" className="cal-btn approve" onClick={() => onApprove('laura')} title="Approve this post">Approve</button>
             )}
             {onDelete && (
-              <button type="button" className="cal-btn danger" onClick={onDelete}>Delete</button>
+              <button type="button" className="cal-btn danger" onClick={onDelete} title="Delete this post permanently">Delete</button>
             )}
           </div>
         </form>
@@ -479,7 +525,7 @@ function CampaignModal({ onSave, onCancel }) {
             Platforms
             <div className="post-platform-toggles" style={{ marginTop: 4 }}>
               {PLATFORMS.map((p) => (
-                <button key={p.key} type="button" className={`plat-toggle ${platTargets.includes(p.key) ? 'active' : ''}`} onClick={() => togglePlat(p.key)}>{p.label}</button>
+                <button key={p.key} type="button" className={`plat-toggle ${platTargets.includes(p.key) ? 'active' : ''}`} onClick={() => togglePlat(p.key)} title={`Toggle ${p.label}`}>{p.label}</button>
               ))}
             </div>
           </div>
@@ -487,7 +533,7 @@ function CampaignModal({ onSave, onCancel }) {
             Color
             <div className="campaign-color-picks">
               {CAMPAIGN_COLORS.map((c) => (
-                <button key={c} type="button" className={`color-pick ${color === c ? 'active' : ''}`} style={{ background: c }} onClick={() => setColor(c)} />
+                <button key={c} type="button" className={`color-pick ${color === c ? 'active' : ''}`} style={{ background: c }} onClick={() => setColor(c)} title={c} />
               ))}
             </div>
           </div>

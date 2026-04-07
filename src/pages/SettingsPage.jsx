@@ -179,7 +179,7 @@ export default function SettingsPage() {
               </div>
             </div>
           ))}
-          <button type="submit" className="settings-btn" disabled={teamSaving}>
+          <button type="submit" className="settings-btn" disabled={teamSaving} title="Save team display names and avatar colors">
             {teamSaving ? 'Saving...' : 'Save team settings'}
           </button>
           {teamMsg && <p className="settings-msg">{teamMsg}</p>}
@@ -250,6 +250,7 @@ export default function SettingsPage() {
                 <button
                   className="test-btn"
                   onClick={() => checkIntegrations()}
+                  title={`Check if ${integration.label} API is connected and syncing`}
                 >
                   Test connection
                 </button>

@@ -118,7 +118,12 @@ export default function ClickUpPage() {
   }
 
   if (loading) {
-    return <div className="clickup-loading">Loading ClickUp tasks...</div>;
+    return (
+      <div className="clickup-loading">
+        <div className="clickup-loading-spinner" />
+        <span>Loading ClickUp tasks...</span>
+      </div>
+    );
   }
 
   return (
@@ -132,7 +137,7 @@ export default function ClickUpPage() {
             </span>
           )}
         </div>
-        <button className="clickup-refresh-btn" onClick={fetchTasks} disabled={loading}>
+        <button className="clickup-refresh-btn" onClick={fetchTasks} disabled={loading} title="Refresh tasks from ClickUp API">
           Refresh
         </button>
       </div>
@@ -150,16 +155,17 @@ export default function ClickUpPage() {
           placeholder="Search tasks..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          title="Search ClickUp tasks by name"
         />
-        <select className="clickup-filter" value={filterAssignee} onChange={(e) => setFilterAssignee(e.target.value)}>
+        <select className="clickup-filter" value={filterAssignee} onChange={(e) => setFilterAssignee(e.target.value)} title="Filter by assignee">
           <option value="">All assignees</option>
           {Object.entries(ASSIGNEE_MAP).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
         </select>
-        <select className="clickup-filter" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+        <select className="clickup-filter" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} title="Filter by status">
           <option value="">All statuses</option>
           {allStatuses.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
-        <select className="clickup-filter" value={filterPriority} onChange={(e) => setFilterPriority(e.target.value)}>
+        <select className="clickup-filter" value={filterPriority} onChange={(e) => setFilterPriority(e.target.value)} title="Filter by priority">
           <option value="">All priorities</option>
           {Object.entries(PRIORITY_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
         </select>
@@ -167,19 +173,24 @@ export default function ClickUpPage() {
 
       {tasks.length === 0 && !error ? (
         <div className="clickup-empty">
-          <p>No tasks found. Make sure your ClickUp API token and team ID are configured correctly.</p>
+          <p className="clickup-empty-text">No tasks found.</p>
+          <p className="clickup-empty-hint">Make sure your ClickUp API token and team ID are configured in Settings.</p>
         </div>
       ) : (
         <div className="clickup-layout">
           <div className="clickup-task-list">
             {filtered.length === 0 ? (
-              <div className="clickup-empty-filter">No tasks match your filters.</div>
+              <div className="clickup-empty-filter">
+                <p className="clickup-empty-filter-text">No tasks match your filters.</p>
+                <p className="clickup-empty-filter-hint">Try adjusting the assignee, status, or priority filters.</p>
+              </div>
             ) : (
               filtered.map((task) => (
                 <button
                   key={task.id}
                   className={`clickup-task-row ${selectedTask?.id === task.id ? 'active' : ''} ${isOverdue(task) ? 'overdue' : ''}`}
                   onClick={() => setSelectedTask(task)}
+                  title={`${task.name}${task.due_date ? ` — Due: ${formatClickUpDate(task.due_date)}` : ''}${isOverdue(task) ? ' (Overdue)' : ''}`}
                 >
                   <div className="clickup-task-top">
                     <span className="clickup-task-name">{task.name}</span>

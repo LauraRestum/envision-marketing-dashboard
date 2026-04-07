@@ -26,7 +26,7 @@ export default function AnalyticsPage() {
       {/* Platform summary strip - placeholder for Phase 5 */}
       <div className="analytics-platforms">
         {PLATFORMS.map((p) => (
-          <div key={p.key} className="analytics-platform-card">
+          <div key={p.key} className="analytics-platform-card" title={`${p.label} — Connect API to see live follower counts and engagement data`}>
             <span className="analytics-plat-name" style={{ color: p.key === 'tiktok' ? 'var(--text-light)' : p.color }}>{p.label}</span>
             <span className="analytics-follower-count">--</span>
             <span className="analytics-plat-note">Connect {p.label} API to display live data</span>

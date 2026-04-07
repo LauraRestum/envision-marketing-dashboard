@@ -122,11 +122,12 @@ export default function FormatterPage() {
                 key={p.key}
                 className={`plat-toggle ${selectedPlatforms.includes(p.key) ? 'active' : ''}`}
                 onClick={() => togglePlatform(p.key)}
+                title={`Toggle ${p.label}`}
               >
                 {p.label}
               </button>
             ))}
-            <button className="plat-toggle-all" onClick={selectAll}>Select All</button>
+            <button className="plat-toggle-all" onClick={selectAll} title="Select all platforms">Select All</button>
           </div>
         </div>
 
@@ -134,6 +135,7 @@ export default function FormatterPage() {
           className="formatter-generate-btn"
           onClick={handleGenerate}
           disabled={loading || !content.trim() || selectedPlatforms.length === 0}
+          title="Generate platform-specific versions of your content"
         >
           {loading ? 'Generating...' : 'Generate'}
         </button>
@@ -155,9 +157,9 @@ export default function FormatterPage() {
                 </div>
                 <div className="result-copy">{copy}</div>
                 <div className="result-actions">
-                  <button className="result-btn" onClick={() => copyToClipboard(copy)}>Copy</button>
-                  <button className="result-btn" onClick={() => regeneratePlatform(platform)} disabled={loading}>Regenerate</button>
-                  <button className="result-btn primary" onClick={() => sendToCalendar(platform, copy)}>Send to Calendar</button>
+                  <button className="result-btn" onClick={() => copyToClipboard(copy)} title="Copy this text to clipboard">Copy</button>
+                  <button className="result-btn" onClick={() => regeneratePlatform(platform)} disabled={loading} title="Generate a new version for this platform">Regenerate</button>
+                  <button className="result-btn primary" onClick={() => sendToCalendar(platform, copy)} title="Create a draft post in the Content Calendar">Send to Calendar</button>
                 </div>
               </div>
             );

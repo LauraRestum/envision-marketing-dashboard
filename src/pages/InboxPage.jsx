@@ -54,8 +54,22 @@ export default function InboxPage() {
 
   const selected = selectedId ? submissions.find((s) => s.id === selectedId) : null;
 
+  // KPI counts
+  const kpi = useMemo(() => {
+    const newCount = submissions.filter((s) => s.status === 'new').length;
+    const reviewCount = submissions.filter((s) => s.status === 'in_review').length;
+    const routedCount = submissions.filter((s) => s.status === 'routed').length;
+    const archivedCount = submissions.filter((s) => s.status === 'archived').length;
+    return { newCount, reviewCount, routedCount, archivedCount, total: submissions.length };
+  }, [submissions]);
+
   if (loading) {
-    return <div className="inbox-loading">Loading inbox...</div>;
+    return (
+      <div className="inbox-loading">
+        <div className="inbox-loading-spinner" />
+        <span>Loading inbox...</span>
+      </div>
+    );
   }
 
   return (
@@ -63,14 +77,34 @@ export default function InboxPage() {
       <div className="inbox-header">
         <h2>Inbox</h2>
         <div className="inbox-filters">
-          <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="inbox-filter-select">
+          <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="inbox-filter-select" title="Filter by submission status">
             <option value="">Active (hide archived)</option>
             {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{STATUS_LABELS[s]}</option>)}
           </select>
-          <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="inbox-filter-select">
+          <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="inbox-filter-select" title="Filter by submission type">
             <option value="">All types</option>
             {Object.entries(TYPE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>
+        </div>
+      </div>
+
+      {/* KPI Strip */}
+      <div className="inbox-kpi-strip">
+        <div className={`inbox-kpi ${kpi.newCount > 0 ? 'kpi-alert' : ''}`} title={`${kpi.newCount} new submission${kpi.newCount !== 1 ? 's' : ''} awaiting review`}>
+          <span className="inbox-kpi-value">{kpi.newCount}</span>
+          <span className="inbox-kpi-label">New</span>
+        </div>
+        <div className="inbox-kpi" title={`${kpi.reviewCount} submission${kpi.reviewCount !== 1 ? 's' : ''} currently being reviewed`}>
+          <span className="inbox-kpi-value">{kpi.reviewCount}</span>
+          <span className="inbox-kpi-label">In Review</span>
+        </div>
+        <div className="inbox-kpi" title={`${kpi.routedCount} submission${kpi.routedCount !== 1 ? 's' : ''} routed to a destination`}>
+          <span className="inbox-kpi-value">{kpi.routedCount}</span>
+          <span className="inbox-kpi-label">Routed</span>
+        </div>
+        <div className="inbox-kpi" title={`${kpi.total} total submissions received`}>
+          <span className="inbox-kpi-value">{kpi.total}</span>
+          <span className="inbox-kpi-label">Total</span>
         </div>
       </div>
 
@@ -78,7 +112,8 @@ export default function InboxPage() {
         <div className="inbox-list">
           {filtered.length === 0 ? (
             <div className="inbox-empty">
-              <p>{submissions.length === 0 ? 'No submissions yet. They will appear here as they come in from the Marketing Resource Hub.' : 'No submissions match your filters.'}</p>
+              <p className="inbox-empty-text">{submissions.length === 0 ? 'No submissions yet.' : 'No submissions match your filters.'}</p>
+              <p className="inbox-empty-hint">{submissions.length === 0 ? 'Submissions from the Marketing Resource Hub will appear here automatically.' : 'Try adjusting the status or type filters above.'}</p>
             </div>
           ) : (
             filtered.map((s) => (
@@ -86,6 +121,7 @@ export default function InboxPage() {
                 key={s.id}
                 className={`inbox-row ${selectedId === s.id ? 'active' : ''} ${s.status === 'new' ? 'unread' : ''}`}
                 onClick={() => { setSelectedId(s.id); setReplyOpen(false); }}
+                title={`${TYPE_LABELS[s.type] || s.type}: ${s.subject || '(no subject)'} — From ${s.submitterName}`}
               >
                 <div className="inbox-row-top">
                   <span className={`inbox-status-chip ${STATUS_COLORS[s.status]}`}>{STATUS_LABELS[s.status]}</span>
@@ -110,7 +146,8 @@ export default function InboxPage() {
             />
           ) : (
             <div className="inbox-detail-empty">
-              <p>Select a submission to view details and take action.</p>
+              <p className="inbox-detail-empty-text">Select a submission to view details.</p>
+              <p className="inbox-detail-empty-hint">You can review, route, assign, and reply from the detail panel.</p>
             </div>
           )}
         </div>
@@ -183,13 +220,13 @@ function SubmissionDetail({ submission, onUpdate, onArchive, replyOpen, setReply
         </div>
         <div className="detail-header-actions">
           {s.status !== 'archived' && (
-            <button className="detail-btn danger" onClick={onArchive}>Archive</button>
+            <button className="detail-btn danger" onClick={onArchive} title="Archive this submission">Archive</button>
           )}
         </div>
       </div>
 
       <div className="detail-meta-strip">
-        <span className="detail-from">
+        <span className="detail-from" title={`${s.submitterName} — ${s.submitterEmail}`}>
           <strong>{s.submitterName}</strong> &middot; {s.submitterEmail}
         </span>
         <span className="detail-timestamp">{formatTimestamp(s.submittedAt)}</span>
@@ -208,6 +245,7 @@ function SubmissionDetail({ submission, onUpdate, onArchive, replyOpen, setReply
             value={s.status}
             onChange={(e) => onUpdate({ status: e.target.value })}
             className="detail-select"
+            title="Change submission status"
           >
             {STATUS_OPTIONS.map((st) => <option key={st} value={st}>{STATUS_LABELS[st]}</option>)}
           </select>
@@ -218,6 +256,7 @@ function SubmissionDetail({ submission, onUpdate, onArchive, replyOpen, setReply
             value={s.routedTo || ''}
             onChange={(e) => onUpdate({ routedTo: e.target.value || null, status: e.target.value ? 'routed' : s.status })}
             className="detail-select"
+            title="Route this submission to a workflow"
           >
             {ROUTE_OPTIONS.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
           </select>
@@ -228,6 +267,7 @@ function SubmissionDetail({ submission, onUpdate, onArchive, replyOpen, setReply
             value={s.assignedTo || ''}
             onChange={(e) => onUpdate({ assignedTo: e.target.value || null })}
             className="detail-select"
+            title="Assign a team member to handle this submission"
           >
             {TEAM.map((t) => <option key={t.key} value={t.key}>{t.label}</option>)}
           </select>
@@ -245,7 +285,7 @@ function SubmissionDetail({ submission, onUpdate, onArchive, replyOpen, setReply
           rows={3}
         />
         <div className="detail-notes-actions">
-          <button className="detail-btn primary" onClick={saveNotes}>Save Notes</button>
+          <button className="detail-btn primary" onClick={saveNotes} title="Save internal notes">Save Notes</button>
           {notesSaved && <span className="detail-saved-msg">Saved</span>}
         </div>
       </div>
@@ -261,7 +301,7 @@ function SubmissionDetail({ submission, onUpdate, onArchive, replyOpen, setReply
         )}
 
         {!replyOpen ? (
-          <button className="detail-btn reply-btn" onClick={() => setReplyOpen(true)}>
+          <button className="detail-btn reply-btn" onClick={() => setReplyOpen(true)} title={`Send a reply email to ${s.submitterEmail}`}>
             Reply to {s.submitterName.split(' ')[0] || 'submitter'}
           </button>
         ) : (
@@ -284,6 +324,7 @@ function SubmissionDetail({ submission, onUpdate, onArchive, replyOpen, setReply
                 className="detail-btn primary"
                 onClick={sendReply}
                 disabled={replySending || !replyText.trim()}
+                title="Send this reply via email"
               >
                 {replySending ? 'Sending...' : 'Send Reply'}
               </button>

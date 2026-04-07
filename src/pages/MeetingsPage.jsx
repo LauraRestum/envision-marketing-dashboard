@@ -50,17 +50,51 @@ export default function MeetingsPage() {
     });
   }
 
+  // KPI data
+  const kpi = useMemo(() => {
+    const total = meetings.length;
+    const totalActions = meetings.reduce((sum, m) => sum + (m.actionItems || []).length, 0);
+    const openActions = meetings.reduce((sum, m) => sum + (m.actionItems || []).filter((a) => !a.completed).length, 0);
+    const uniqueTags = allTags.length;
+    return { total, totalActions, openActions, uniqueTags };
+  }, [meetings, allTags]);
+
   if (loading) {
-    return <div className="meetings-loading">Loading meetings...</div>;
+    return (
+      <div className="meetings-loading">
+        <div className="meetings-loading-spinner" />
+        <span>Loading meetings...</span>
+      </div>
+    );
   }
 
   return (
     <div className="meetings-page">
       <div className="meetings-header">
         <h2>Meeting Notes</h2>
-        <button className="new-meeting-btn" onClick={() => setShowModal(true)}>
+        <button className="new-meeting-btn" onClick={() => setShowModal(true)} title="Record a new meeting with notes and action items">
           + New Meeting
         </button>
+      </div>
+
+      {/* KPI Strip */}
+      <div className="meetings-kpi-strip">
+        <div className="meetings-kpi" title={`${kpi.total} meetings recorded`}>
+          <span className="meetings-kpi-value">{kpi.total}</span>
+          <span className="meetings-kpi-label">Meetings</span>
+        </div>
+        <div className={`meetings-kpi ${kpi.openActions > 0 ? 'kpi-alert' : ''}`} title={`${kpi.openActions} action items still open`}>
+          <span className="meetings-kpi-value">{kpi.openActions}</span>
+          <span className="meetings-kpi-label">Open Actions</span>
+        </div>
+        <div className="meetings-kpi kpi-positive" title={`${kpi.totalActions - kpi.openActions} action items completed`}>
+          <span className="meetings-kpi-value">{kpi.totalActions - kpi.openActions}</span>
+          <span className="meetings-kpi-label">Done Actions</span>
+        </div>
+        <div className="meetings-kpi" title={`${kpi.uniqueTags} unique tags used across meetings`}>
+          <span className="meetings-kpi-value">{kpi.uniqueTags}</span>
+          <span className="meetings-kpi-label">Tags</span>
+        </div>
       </div>
 
       <div className="meetings-toolbar">
@@ -70,11 +104,13 @@ export default function MeetingsPage() {
           placeholder="Search notes, agenda, tags..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          title="Search across meeting titles, notes, agenda items, and tags"
         />
         <select
           className="meetings-filter"
           value={filterAttendee}
           onChange={(e) => setFilterAttendee(e.target.value)}
+          title="Filter meetings by attendee"
         >
           <option value="">All attendees</option>
           {TEAM.map((t) => <option key={t.key} value={t.key}>{t.label}</option>)}
@@ -83,6 +119,7 @@ export default function MeetingsPage() {
           className="meetings-filter"
           value={filterTag}
           onChange={(e) => setFilterTag(e.target.value)}
+          title="Filter meetings by tag"
         >
           <option value="">All tags</option>
           {allTags.map((t) => <option key={t} value={t}>{t}</option>)}
@@ -92,15 +129,17 @@ export default function MeetingsPage() {
       <div className="meetings-layout">
         <div className="meetings-list">
           {filtered.length === 0 ? (
-            <p className="meetings-empty">
-              {meetings.length === 0 ? 'No meetings recorded yet. Start by creating one.' : 'No meetings match your filters.'}
-            </p>
+            <div className="meetings-empty">
+              <p className="meetings-empty-text">{meetings.length === 0 ? 'No meetings recorded yet.' : 'No meetings match your filters.'}</p>
+              <p className="meetings-empty-hint">{meetings.length === 0 ? 'Click "+ New Meeting" to record your first meeting notes.' : 'Try adjusting the attendee, tag, or search filters.'}</p>
+            </div>
           ) : (
             filtered.map((m) => (
               <button
                 key={m.id}
                 className={`meeting-row ${selectedId === m.id ? 'active' : ''}`}
                 onClick={() => setSelectedId(m.id)}
+                title={`${m.title} — ${formatDate(m.date)} — ${(m.attendees || []).length} attendees`}
               >
                 <div className="meeting-row-top">
                   <span className="meeting-row-title">{m.title}</span>
@@ -131,7 +170,8 @@ export default function MeetingsPage() {
             />
           ) : (
             <div className="detail-empty">
-              <p>Select a meeting to view details, or create a new one.</p>
+              <p className="detail-empty-text">Select a meeting to view details.</p>
+              <p className="detail-empty-hint">Meeting notes, agenda, and action items will appear here.</p>
             </div>
           )}
         </div>
@@ -318,11 +358,11 @@ function MeetingDetail({ meeting, onUpdate, onDelete, onSendToTasks }) {
           <span className="detail-date">{formatDate(meeting.date)}</span>
         </div>
         <div className="detail-actions">
-          <button className="detail-action-btn" onClick={() => setEditing(true)}>Edit</button>
-          <button className="detail-action-btn" onClick={handleExport}>
+          <button className="detail-action-btn" onClick={() => setEditing(true)} title="Edit meeting details">Edit</button>
+          <button className="detail-action-btn" onClick={handleExport} title="Copy meeting notes to clipboard">
             {copied ? 'Copied' : 'Export'}
           </button>
-          <button className="detail-action-btn danger" onClick={onDelete}>Delete</button>
+          <button className="detail-action-btn danger" onClick={onDelete} title="Delete this meeting">Delete</button>
         </div>
       </div>
 

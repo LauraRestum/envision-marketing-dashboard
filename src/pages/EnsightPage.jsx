@@ -109,7 +109,12 @@ export default function EnsightPage() {
   }
 
   if (loading) {
-    return <div className="ensight-loading">Loading Ensight Planner...</div>;
+    return (
+      <div className="ensight-loading">
+        <div className="ensight-loading-spinner" />
+        <span>Loading Ensight Planner...</span>
+      </div>
+    );
   }
 
   return (
@@ -176,7 +181,7 @@ function IssuePanel({ issueMonth, label, stories, stages, onAddStory, onEditStor
           const isPast = days < 0;
           const isUrgent = days >= 0 && days <= 5;
           return (
-            <div key={d.label} className={`deadline-item ${isPast ? 'past' : ''} ${isUrgent ? 'urgent' : ''}`}>
+            <div key={d.label} className={`deadline-item ${isPast ? 'past' : ''} ${isUrgent ? 'urgent' : ''}`} title={`${d.label}: ${d.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })} — ${isPast ? 'Passed' : days === 0 ? 'Today' : `${days} days away`}`}>
               <span className="deadline-label">{d.label}</span>
               <span className="deadline-date">{d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
               <span className="deadline-countdown">
@@ -194,9 +199,12 @@ function IssuePanel({ issueMonth, label, stories, stages, onAddStory, onEditStor
             {story ? (
               <StoryCard story={story} stages={stages} onEdit={() => onEditStory(story)} onStageChange={onStageChange} />
             ) : (
-              <button className="add-story-btn" onClick={() => onAddStory(issueMonth, slot)}>
-                + Add Story
-              </button>
+              <div>
+                <button className="add-story-btn" onClick={() => onAddStory(issueMonth, slot)} title={`Add a story for slot ${slot}`}>
+                  + Add Story
+                </button>
+                <p className="slot-empty-hint">Click to pitch or assign a story for this slot.</p>
+              </div>
             )}
           </div>
         ))}
@@ -210,7 +218,7 @@ function StoryCard({ story, stages, onEdit, onStageChange }) {
   const platformsDone = Object.values(story.platformRollout || {}).filter(Boolean).length;
 
   return (
-    <div className="story-card" onClick={onEdit}>
+    <div className="story-card" onClick={onEdit} title={`${story.title || '(untitled)'} — ${STAGE_LABELS[story.stage] || story.stage}${story.assignedTo ? ` — ${story.assignedTo}` : ''}`}>
       <div className="story-card-top">
         <span className="story-card-title">{story.title || '(untitled)'}</span>
         {pillar && <span className="story-pillar-tag">{pillar.label}</span>}

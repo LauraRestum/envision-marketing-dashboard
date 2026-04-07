@@ -58,8 +58,19 @@ export default function TasksPage() {
     e.preventDefault();
   }
 
+  // KPI summary
+  const allActive = tasks.filter((t) => t.status !== 'done' && t.status !== 'completed');
+  const allOverdue = tasks.filter((t) => isOverdue(t));
+  const totalCompletedWeek = TEAM.reduce((sum, m) => sum + getThisWeekCompleted(m.key).length, 0);
+  const highPriorityCount = allActive.filter((t) => t.priority === 'high').length;
+
   if (loading) {
-    return <div className="tasks-loading">Loading tasks...</div>;
+    return (
+      <div className="tasks-loading">
+        <div className="tasks-loading-spinner" />
+        <span>Loading tasks...</span>
+      </div>
+    );
   }
 
   return (
@@ -67,18 +78,36 @@ export default function TasksPage() {
       <div className="tasks-header">
         <h2>Team & Tasks</h2>
         <div className="tasks-filters">
-          <button
-            className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
-            onClick={() => setFilter('all')}
-          >All</button>
-          <button
-            className={`filter-btn ${filter === 'high' ? 'active' : ''}`}
-            onClick={() => setFilter('high')}
-          >High Priority</button>
-          <button
-            className={`filter-btn ${filter === 'due_this_week' ? 'active' : ''}`}
-            onClick={() => setFilter('due_this_week')}
-          >Due This Week</button>
+          {FILTERS.map((f) => (
+            <button
+              key={f}
+              className={`filter-btn ${filter === f ? 'active' : ''}`}
+              onClick={() => setFilter(f)}
+              title={f === 'all' ? 'Show all tasks' : f === 'high' ? 'Show high priority only' : 'Tasks due this week'}
+            >
+              {f === 'all' ? 'All' : f === 'high' ? 'High Priority' : 'Due This Week'}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* KPI Strip */}
+      <div className="tasks-kpi-strip">
+        <div className={`tasks-kpi ${allOverdue.length > 0 ? 'kpi-alert' : ''}`} title={`${allOverdue.length} task${allOverdue.length !== 1 ? 's' : ''} past their due date`}>
+          <span className="tasks-kpi-value">{allOverdue.length}</span>
+          <span className="tasks-kpi-label">Overdue</span>
+        </div>
+        <div className="tasks-kpi" title={`${allActive.length} tasks in active or upcoming status`}>
+          <span className="tasks-kpi-value">{allActive.length}</span>
+          <span className="tasks-kpi-label">Open Tasks</span>
+        </div>
+        <div className="tasks-kpi" title={`${highPriorityCount} active tasks marked as high priority`}>
+          <span className="tasks-kpi-value">{highPriorityCount}</span>
+          <span className="tasks-kpi-label">High Priority</span>
+        </div>
+        <div className="tasks-kpi kpi-positive" title={`${totalCompletedWeek} tasks completed across all team members this week`}>
+          <span className="tasks-kpi-value">{totalCompletedWeek}</span>
+          <span className="tasks-kpi-label">Done This Week</span>
         </div>
       </div>
 
@@ -94,7 +123,7 @@ export default function TasksPage() {
             .sort((a, b) => a.due.localeCompare(b.due))[0];
 
           return (
-            <div key={member.key} className="workload-card">
+            <div key={member.key} className="workload-card" title={`${member.name}: ${active.length} active, ${upcoming.length} upcoming, ${completedThisWeek.length} completed this week`}>
               <div className="workload-top">
                 <div className="workload-avatar" style={{ background: member.color }}>
                   {member.initial}
@@ -104,16 +133,18 @@ export default function TasksPage() {
                   <span className="workload-count">{active.length} active tasks</span>
                 </div>
               </div>
-              <div className="workload-progress-bar">
+              <div className="workload-progress-bar" title={`${Math.round(progress * 100)}% of weekly tasks completed`}>
                 <div className="workload-progress-fill" style={{ width: `${progress * 100}%` }} />
               </div>
               <span className="workload-meta">
                 {completedThisWeek.length} / {total} this week
               </span>
-              {nextDue && (
-                <span className="workload-next-due">
+              {nextDue ? (
+                <span className="workload-next-due" title={`Next due: ${nextDue.title}`}>
                   Next due: {formatDate(nextDue.due)}
                 </span>
+              ) : (
+                <span className="workload-next-due muted">No upcoming deadlines</span>
               )}
             </div>
           );
@@ -173,16 +204,20 @@ function TaskColumn({
           {member.initial}
         </div>
         <span className="column-name">{member.name.split(' ')[0]}</span>
-        <button className="add-task-btn" onClick={onAdd}>+ Add</button>
+        <span className="column-count">{active.length + upcoming.length}</span>
+        <button className="add-task-btn" onClick={onAdd} title={`Add task for ${member.name.split(' ')[0]}`}>+ Add</button>
       </div>
 
       {active.length === 0 && upcoming.length === 0 && (
-        <p className="column-empty">No active tasks right now.</p>
+        <div className="column-empty">
+          <p className="column-empty-text">No active tasks right now.</p>
+          <p className="column-empty-hint">Click "+ Add" to assign a new task.</p>
+        </div>
       )}
 
       {active.length > 0 && (
         <div className="task-section">
-          <span className="section-label">Active</span>
+          <span className="section-label">Active ({active.length})</span>
           {active.sort(prioritySort).map((task) => (
             <TaskCard
               key={task.id}
@@ -201,7 +236,7 @@ function TaskColumn({
 
       {upcoming.length > 0 && (
         <div className="task-section">
-          <span className="section-label">Upcoming</span>
+          <span className="section-label">Upcoming ({upcoming.length})</span>
           {upcoming.sort(prioritySort).map((task) => (
             <TaskCard
               key={task.id}
@@ -223,6 +258,7 @@ function TaskColumn({
           <button
             className="section-toggle"
             onClick={() => setShowCompleted(!showCompleted)}
+            title={showCompleted ? 'Hide completed tasks' : 'Show completed tasks'}
           >
             Completed ({completed.length}) {showCompleted ? '\u25B2' : '\u25BC'}
           </button>
@@ -321,6 +357,7 @@ function TaskCard({
       className={`task-card ${isOverdue ? 'overdue' : ''} ${isCompleted ? 'completed' : ''}`}
       draggable={!isCompleted}
       onDragStart={onDragStart}
+      title={`${task.title}${task.due ? ` — Due: ${formatDate(task.due)}` : ''}${task.notes ? ` — ${task.notes}` : ''} — Priority: ${PRIORITY_LABELS[task.priority] || 'Medium'}`}
     >
       <div className="task-card-top">
         {!isCompleted ? (
@@ -345,11 +382,11 @@ function TaskCard({
       {(task.due || task.notes) && (
         <div className="task-card-meta">
           {task.due && (
-            <span className={`task-due ${isOverdue ? 'overdue-text' : ''}`}>
+            <span className={`task-due ${isOverdue ? 'overdue-text' : ''}`} title={isOverdue ? `Overdue since ${formatDate(task.due)}` : `Due ${formatDate(task.due)}`}>
               {formatDate(task.due)}
             </span>
           )}
-          {task.notes && <span className="task-notes-preview">{task.notes}</span>}
+          {task.notes && <span className="task-notes-preview" title={task.notes}>{task.notes}</span>}
         </div>
       )}
     </div>
