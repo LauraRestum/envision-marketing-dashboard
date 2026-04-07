@@ -47,7 +47,7 @@ Create a `.env` file in the project root (never commit this file). Each variable
 | `LINKEDIN_ACCESS_TOKEN` | LinkedIn Developer Portal |
 | `TIKTOK_ACCESS_TOKEN` | TikTok Developer Portal |
 | `RESEND_API_KEY` | Resend dashboard |
-| `DASHBOARD_PASSWORD_HASH` | Generated via bcrypt (details in Password section) |
+| `VITE_DASHBOARD_PASSWORD_HASH` | SHA-256 hash of the team password (see Password section) |
 | `EXTERNAL_HUB_URL` | The URL of your external Marketing Resource Hub |
 
 **Why secrets never go in the browser:** Any JavaScript running in a browser can be inspected by anyone with browser developer tools. If an API key is in browser code, it is public. Server-side keys stay on Vercel's servers, and the browser only talks to our own API routes, which then talk to external services. This keeps credentials safe from exposure.
@@ -70,10 +70,9 @@ service cloud.firestore {
 }
 ```
 
-5. Create the initial config document manually in Firestore:
-   - Collection: `config`, Document ID: `app`
-   - Field: `passwordHash` (string) with a bcrypt hash of your chosen password
-   - Generate a hash: `node -e "require('bcryptjs').hash('yourpassword', 10).then(console.log)"`
+5. The password gate uses a SHA-256 hash stored in the `VITE_DASHBOARD_PASSWORD_HASH` env variable (client-side).
+   - Generate a hash: `echo -n "yourpassword" | sha256sum` (or use any SHA-256 tool)
+   - Set `VITE_DASHBOARD_PASSWORD_HASH` in your Vercel environment variables
 
 ## Vercel Deployment
 
@@ -97,7 +96,9 @@ Use the Settings page inside the dashboard:
 1. Navigate to Settings
 2. Enter your current password
 3. Enter and confirm the new password
-4. Save. All active sessions are signed out, and everyone re-enters the new password
+4. The Settings page will display the new SHA-256 hash
+5. Copy the hash and update `VITE_DASHBOARD_PASSWORD_HASH` in Vercel > Settings > Environment Variables
+6. Redeploy for the change to take effect
 
 ## Phase Build Status
 
@@ -112,7 +113,7 @@ Use the Settings page inside the dashboard:
 
 - **Social platform API approval:** Facebook, Instagram, TikTok, and LinkedIn API access requires developer app approval from each platform. This can take days to weeks. The Analytics module UI will be built with mock data first.
 - **Competitor data is manual:** Social platforms do not allow API access to competitor data. Competitor follower counts and observations are entered manually.
-- **Password gate is lightweight:** This is a simple bcrypt password check, not enterprise SSO. It protects against casual access. For a 3-person internal team, this is sufficient.
+- **Password gate is lightweight:** This is a simple SHA-256 password check, not enterprise SSO. It protects against casual access. For a 3-person internal team, this is sufficient.
 - **No file upload in V1:** Content Calendar asset fields are text descriptions, not file uploads.
 
 ## Architecture
