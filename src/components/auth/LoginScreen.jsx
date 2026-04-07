@@ -1,9 +1,16 @@
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { db } from '../../lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
-import { compare } from 'bcryptjs';
 import './LoginScreen.css';
+
+const EXPECTED_HASH = import.meta.env.VITE_DASHBOARD_PASSWORD_HASH
+  || 'f71bf986627268aaf7afdf3a96e6029c6b8f639e6f7fcf0aba3bd75746f035b4';
+
+async function sha256(message) {
+  const msgBuffer = new TextEncoder().encode(message);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+}
 
 export default function LoginScreen() {
   const { login } = useAuth();
@@ -19,24 +26,16 @@ export default function LoginScreen() {
     setError('');
 
     try {
-      const configDoc = await getDoc(doc(db, 'config', 'app'));
-      if (!configDoc.exists()) {
-        setError('Dashboard not configured yet. Contact your administrator.');
-        setLoading(false);
-        return;
-      }
+      const inputHash = await sha256(password);
 
-      const { passwordHash } = configDoc.data();
-      const match = await compare(password, passwordHash);
-
-      if (match) {
+      if (inputHash === EXPECTED_HASH) {
         login();
       } else {
         setError('Incorrect password. Try again.');
       }
     } catch (err) {
       console.error('Login error:', err);
-      setError('Unable to connect. Check your network and try again.');
+      setError('Unable to verify password. Try again.');
     }
 
     setLoading(false);

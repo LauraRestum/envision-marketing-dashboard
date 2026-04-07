@@ -1,9 +1,18 @@
 import { useState, useEffect } from 'react';
 import { db } from '../lib/firebase';
-import { doc, getDoc, updateDoc, setDoc } from 'firebase/firestore';
-import { hash, compare } from 'bcryptjs';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 import './SettingsPage.css';
+
+const EXPECTED_HASH = import.meta.env.VITE_DASHBOARD_PASSWORD_HASH
+  || 'f71bf986627268aaf7afdf3a96e6029c6b8f639e6f7fcf0aba3bd75746f035b4';
+
+async function sha256(message) {
+  const msgBuffer = new TextEncoder().encode(message);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+}
 
 const TEAM_MEMBERS = ['laura', 'arlo', 'madison'];
 const DEFAULT_COLORS = { laura: '#003087', arlo: '#004bb5', madison: '#78BE21' };
@@ -89,30 +98,23 @@ export default function SettingsPage() {
 
     setPwSaving(true);
     try {
-      const configDoc = await getDoc(doc(db, 'config', 'app'));
-      if (!configDoc.exists()) {
-        setPwError('Dashboard config not found.');
-        setPwSaving(false);
-        return;
-      }
-
-      const { passwordHash } = configDoc.data();
-      const valid = await compare(currentPw, passwordHash);
-      if (!valid) {
+      const currentHash = await sha256(currentPw);
+      if (currentHash !== EXPECTED_HASH) {
         setPwError('Current password is incorrect.');
         setPwSaving(false);
         return;
       }
 
-      const newHash = await hash(newPw, 10);
-      await updateDoc(doc(db, 'config', 'app'), { passwordHash: newHash });
-      setPwMsg('Password updated. All sessions will be signed out.');
+      const newHash = await sha256(newPw);
+      setPwMsg(
+        `Password hash generated. Update your Vercel env variable VITE_DASHBOARD_PASSWORD_HASH to:\n${newHash}\nThen redeploy.`
+      );
       setCurrentPw('');
       setNewPw('');
       setConfirmPw('');
-      setTimeout(() => logout(), 2000);
+      setTimeout(() => logout(), 4000);
     } catch (err) {
-      setPwError('Failed to update password. Try again.');
+      setPwError('Failed to generate new password hash. Try again.');
     }
     setPwSaving(false);
   }
