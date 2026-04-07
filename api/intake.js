@@ -52,6 +52,11 @@ export default async function handler(req, res) {
   try {
     const db = getAdminDb();
 
+    if (!db) {
+      console.error('Intake error: Firebase Admin DB unavailable (check FIREBASE_SERVICE_ACCOUNT env var)');
+      return res.status(500).json({ error: 'Database unavailable. Check server configuration.' });
+    }
+
     const submission = {
       type,
       submitterName: submitterName || 'Anonymous',
