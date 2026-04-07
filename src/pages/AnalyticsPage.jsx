@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import usePosts from '../hooks/usePosts';
+import useSocialAnalytics from '../hooks/useSocialAnalytics';
 import './AnalyticsPage.css';
 
 const PLATFORMS = [
@@ -15,23 +16,48 @@ const PILLAR_LABELS = {
   education: 'Education', arts_culture: 'Arts & Culture',
 };
 
+function formatFollowers(count) {
+  if (count >= 1_000_000) return `${(count / 1_000_000).toFixed(1)}M`;
+  if (count >= 1_000) return `${(count / 1_000).toFixed(1)}K`;
+  return String(count);
+}
+
 export default function AnalyticsPage() {
   const navigate = useNavigate();
   const { addPost } = usePosts();
+  const { analytics, loading: analyticsLoading, refresh: refreshAnalytics } = useSocialAnalytics();
 
   return (
     <div className="analytics-page">
-      <h2>Analytics</h2>
+      <div className="analytics-header">
+        <h2>Analytics</h2>
+        <button className="analytics-refresh-btn" onClick={refreshAnalytics} disabled={analyticsLoading} title="Refresh all platform data">
+          {analyticsLoading ? 'Refreshing...' : 'Refresh'}
+        </button>
+      </div>
 
-      {/* Platform summary strip - placeholder for Phase 5 */}
       <div className="analytics-platforms">
-        {PLATFORMS.map((p) => (
-          <div key={p.key} className="analytics-platform-card" title={`${p.label} — Connect API to see live follower counts and engagement data`}>
-            <span className="analytics-plat-name" style={{ color: p.key === 'tiktok' ? 'var(--text-light)' : p.color }}>{p.label}</span>
-            <span className="analytics-follower-count">--</span>
-            <span className="analytics-plat-note">Connect {p.label} API to display live data</span>
-          </div>
-        ))}
+        {PLATFORMS.map((p) => {
+          const data = analytics[p.key];
+          const connected = data?.connected;
+          const followers = data?.followers;
+          const cached = data?._cached;
+          const lastSynced = data?._lastSynced;
+
+          return (
+            <div key={p.key} className={`analytics-platform-card ${connected ? 'connected' : ''}`} title={connected ? `${p.label} — Last synced: ${lastSynced ? new Date(lastSynced).toLocaleString() : 'unknown'}` : `${p.label} — Connect API to see live data`}>
+              <span className="analytics-plat-name" style={{ color: p.key === 'tiktok' ? 'var(--text-light)' : p.color }}>{p.label}</span>
+              <span className="analytics-follower-count">
+                {analyticsLoading ? '...' : connected ? formatFollowers(followers) : '--'}
+              </span>
+              <span className="analytics-plat-note">
+                {connected
+                  ? `${cached ? 'Cached' : 'Live'}${lastSynced ? ` · ${new Date(lastSynced).toLocaleTimeString()}` : ''}`
+                  : `Connect ${p.label} API to display live data`}
+              </span>
+            </div>
+          );
+        })}
       </div>
 
       <div className="analytics-sections">

@@ -121,9 +121,34 @@ export default function SettingsPage() {
 
   async function checkIntegrations() {
     const statuses = {};
+
+    // Load social IDs for platform-specific cache keys
+    let socialIds = {};
+    try {
+      const idsDoc = await getDoc(doc(db, 'config', 'social_ids'));
+      if (idsDoc.exists()) socialIds = idsDoc.data();
+    } catch { /* ignore */ }
+
     for (const integration of INTEGRATIONS) {
       try {
-        const cacheDoc = await getDoc(doc(db, 'analytics_cache', integration.key));
+        // Determine the cache key(s) to check
+        let cacheCollection = 'analytics_cache';
+        let cacheKey = integration.key;
+
+        if (integration.key === 'clickup') {
+          cacheCollection = 'clickup_cache';
+          cacheKey = 'teams';
+        } else if (integration.key === 'facebook' && socialIds.facebook_page_id) {
+          cacheKey = `facebook_${socialIds.facebook_page_id}`;
+        } else if (integration.key === 'instagram' && socialIds.instagram_page_id) {
+          cacheKey = `instagram_${socialIds.instagram_page_id}`;
+        } else if (integration.key === 'tiktok') {
+          cacheKey = 'tiktok_profile';
+        } else if (integration.key === 'linkedin' && socialIds.linkedin_org_id) {
+          cacheKey = `linkedin_${socialIds.linkedin_org_id}`;
+        }
+
+        const cacheDoc = await getDoc(doc(db, cacheCollection, cacheKey));
         if (cacheDoc.exists() && cacheDoc.data().lastSynced) {
           statuses[integration.key] = {
             connected: true,
