@@ -87,10 +87,16 @@ export default async function handler(req, res) {
   try {
     const data = await scrapeLinkedIn(cleanHandle);
 
-    await db.collection('analytics_cache').doc(cacheKey).set({
-      data,
-      lastSynced: new Date().toISOString(),
-    });
+    if (db) {
+      try {
+        await db.collection('analytics_cache').doc(cacheKey).set({
+          data,
+          lastSynced: new Date().toISOString(),
+        });
+      } catch (cacheErr) {
+        console.warn('Cache write skipped:', cacheErr.message);
+      }
+    }
 
     return res.status(200).json({
       ...data,
@@ -100,19 +106,21 @@ export default async function handler(req, res) {
   } catch (err) {
     console.error(`LinkedIn scrape error (${cleanHandle}):`, err.message);
 
-    try {
-      const cached = await db.collection('analytics_cache').doc(cacheKey).get();
-      if (cached.exists) {
-        const cachedData = cached.data();
-        return res.status(200).json({
-          ...cachedData.data,
-          _cached: true,
-          _lastSynced: cachedData.lastSynced,
-          _error: 'Could not reach LinkedIn. Showing cached data.',
-        });
+    if (db) {
+      try {
+        const cached = await db.collection('analytics_cache').doc(cacheKey).get();
+        if (cached.exists) {
+          const cachedData = cached.data();
+          return res.status(200).json({
+            ...cachedData.data,
+            _cached: true,
+            _lastSynced: cachedData.lastSynced,
+            _error: 'Could not reach LinkedIn. Showing cached data.',
+          });
+        }
+      } catch (cacheErr) {
+        console.error('Cache read error:', cacheErr);
       }
-    } catch (cacheErr) {
-      console.error('Cache read error:', cacheErr);
     }
 
     return res.status(502).json({
