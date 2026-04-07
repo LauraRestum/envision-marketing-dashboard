@@ -19,12 +19,15 @@ const DEFAULT_COLORS = { laura: '#003087', arlo: '#004bb5', madison: '#78BE21' }
 
 const INTEGRATIONS = [
   { key: 'clickup', label: 'ClickUp', envVar: 'CLICKUP_API_TOKEN' },
-  { key: 'facebook', label: 'Facebook', envVar: 'META_ACCESS_TOKEN' },
-  { key: 'instagram', label: 'Instagram', envVar: 'META_ACCESS_TOKEN' },
-  { key: 'tiktok', label: 'TikTok', envVar: 'TIKTOK_ACCESS_TOKEN' },
-  { key: 'linkedin', label: 'LinkedIn', envVar: 'LINKEDIN_ACCESS_TOKEN' },
   { key: 'anthropic', label: 'Anthropic (AI)', envVar: 'ANTHROPIC_API_KEY' },
   { key: 'resend', label: 'Resend (Email)', envVar: 'RESEND_API_KEY' },
+];
+
+const SOCIAL_PLATFORMS = [
+  { key: 'facebook', label: 'Facebook', placeholder: 'EnvisionUS' },
+  { key: 'instagram', label: 'Instagram', placeholder: 'envisionus' },
+  { key: 'tiktok', label: 'TikTok', placeholder: '@envisionus' },
+  { key: 'linkedin', label: 'LinkedIn', placeholder: 'envision-us' },
 ];
 
 export default function SettingsPage() {
@@ -48,8 +51,13 @@ export default function SettingsPage() {
 
   const [integrationStatus, setIntegrationStatus] = useState({});
 
+  const [socialHandles, setSocialHandles] = useState({});
+  const [socialSaving, setSocialSaving] = useState(false);
+  const [socialMsg, setSocialMsg] = useState('');
+
   useEffect(() => {
     loadTeamSettings();
+    loadSocialHandles();
     checkIntegrations();
   }, []);
 
@@ -119,16 +127,52 @@ export default function SettingsPage() {
     setPwSaving(false);
   }
 
+  async function loadSocialHandles() {
+    try {
+      const handlesDoc = await getDoc(doc(db, 'config', 'social_handles'));
+      if (handlesDoc.exists()) setSocialHandles(handlesDoc.data());
+    } catch (err) {
+      console.warn('Failed to load social handles:', err);
+    }
+  }
+
+  async function saveSocialHandles(e) {
+    e.preventDefault();
+    setSocialSaving(true);
+    setSocialMsg('');
+    try {
+      await setDoc(doc(db, 'config', 'social_handles'), socialHandles, { merge: true });
+      setSocialMsg('Social handles saved. Go to Analytics and hit Refresh to scrape.');
+    } catch {
+      setSocialMsg('Failed to save. Try again.');
+    }
+    setSocialSaving(false);
+  }
+
   async function checkIntegrations() {
     const statuses = {};
+
+    // Load social handles for cache key lookups
+    let handles = {};
+    try {
+      const handlesDoc = await getDoc(doc(db, 'config', 'social_handles'));
+      if (handlesDoc.exists()) handles = handlesDoc.data();
+    } catch { /* ignore */ }
+
+    // Check server-side integrations (ClickUp, Anthropic, Resend)
     for (const integration of INTEGRATIONS) {
       try {
-        const cacheDoc = await getDoc(doc(db, 'analytics_cache', integration.key));
+        let cacheCollection = 'analytics_cache';
+        let cacheKey = integration.key;
+
+        if (integration.key === 'clickup') {
+          cacheCollection = 'clickup_cache';
+          cacheKey = 'teams';
+        }
+
+        const cacheDoc = await getDoc(doc(db, cacheCollection, cacheKey));
         if (cacheDoc.exists() && cacheDoc.data().lastSynced) {
-          statuses[integration.key] = {
-            connected: true,
-            lastSynced: cacheDoc.data().lastSynced,
-          };
+          statuses[integration.key] = { connected: true, lastSynced: cacheDoc.data().lastSynced };
         } else {
           statuses[integration.key] = { connected: false, lastSynced: null };
         }
@@ -136,6 +180,27 @@ export default function SettingsPage() {
         statuses[integration.key] = { connected: false, lastSynced: null };
       }
     }
+
+    // Check social platform scraper caches
+    for (const platform of SOCIAL_PLATFORMS) {
+      const handle = handles[platform.key];
+      if (!handle) {
+        statuses[platform.key] = { connected: false, lastSynced: null };
+        continue;
+      }
+      const cacheKey = `${platform.key}_${handle.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+      try {
+        const cacheDoc = await getDoc(doc(db, 'analytics_cache', cacheKey));
+        if (cacheDoc.exists() && cacheDoc.data().lastSynced) {
+          statuses[platform.key] = { connected: true, lastSynced: cacheDoc.data().lastSynced };
+        } else {
+          statuses[platform.key] = { connected: false, lastSynced: null };
+        }
+      } catch {
+        statuses[platform.key] = { connected: false, lastSynced: null };
+      }
+    }
+
     setIntegrationStatus(statuses);
   }
 
@@ -222,6 +287,41 @@ export default function SettingsPage() {
           </button>
           {pwError && <p className="settings-error">{pwError}</p>}
           {pwMsg && <p className="settings-msg">{pwMsg}</p>}
+        </form>
+      </section>
+
+      <section className="settings-section">
+        <h3>Social Profiles</h3>
+        <p className="settings-hint">
+          Enter your public profile handles for each platform. The dashboard scrapes these public pages
+          for follower counts — no API tokens needed.
+        </p>
+        <form onSubmit={saveSocialHandles} className="settings-form">
+          {SOCIAL_PLATFORMS.map((platform) => {
+            const status = integrationStatus[platform.key];
+            const connected = status?.connected;
+            return (
+              <div key={platform.key} className="social-handle-row">
+                <span className={`status-dot ${connected ? 'green' : socialHandles[platform.key] ? 'yellow' : 'red'}`} />
+                <label className="settings-label social-label">
+                  {platform.label}
+                  <input
+                    type="text"
+                    value={socialHandles[platform.key] || ''}
+                    onChange={(e) => setSocialHandles({ ...socialHandles, [platform.key]: e.target.value })}
+                    placeholder={platform.placeholder}
+                  />
+                </label>
+                {connected && status.lastSynced && (
+                  <span className="social-synced-time">Last scraped: {new Date(status.lastSynced).toLocaleString()}</span>
+                )}
+              </div>
+            );
+          })}
+          <button type="submit" className="settings-btn" disabled={socialSaving} title="Save social profile handles">
+            {socialSaving ? 'Saving...' : 'Save social handles'}
+          </button>
+          {socialMsg && <p className="settings-msg">{socialMsg}</p>}
         </form>
       </section>
 

@@ -6,6 +6,21 @@ import getAdminDb from './_db.js';
 
 const CLICKUP_BASE = 'https://api.clickup.com/api/v2';
 
+async function clickupFetch(endpoint, token) {
+  // Try raw token first (personal API tokens), then Bearer format (OAuth tokens)
+  let response = await fetch(endpoint, {
+    headers: { 'Authorization': token, 'Content-Type': 'application/json' },
+  });
+
+  if (response.status === 401) {
+    response = await fetch(endpoint, {
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+    });
+  }
+
+  return response;
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -13,7 +28,7 @@ export default async function handler(req, res) {
 
   const token = process.env.CLICKUP_API_TOKEN;
   if (!token) {
-    return res.status(500).json({ error: 'ClickUp API token not configured.' });
+    return res.status(500).json({ error: 'ClickUp API token not configured. Add CLICKUP_API_TOKEN in Vercel environment variables.' });
   }
 
   // Query params: action, team_id, list_id
@@ -34,15 +49,13 @@ export default async function handler(req, res) {
   const cacheKey = action === 'tasks' ? `tasks_${team_id}` : action === 'list_tasks' ? `list_${list_id}` : 'teams';
 
   try {
-    const response = await fetch(endpoint, {
-      headers: {
-        'Authorization': token,
-        'Content-Type': 'application/json',
-      },
-    });
+    const response = await clickupFetch(endpoint, token);
 
     if (!response.ok) {
-      throw new Error(`ClickUp API returned ${response.status}`);
+      const errText = await response.text().catch(() => '');
+      let detail = '';
+      try { detail = JSON.parse(errText)?.err || errText; } catch { detail = errText; }
+      throw new Error(`ClickUp API returned ${response.status}: ${detail}`);
     }
 
     const data = await response.json();
@@ -70,7 +83,7 @@ export default async function handler(req, res) {
           ...cachedData.data,
           _cached: true,
           _lastSynced: cachedData.lastSynced,
-          _error: 'ClickUp connection unavailable. Showing cached data.',
+          _error: err.message || 'ClickUp connection unavailable. Showing cached data.',
         });
       }
     } catch (cacheErr) {
@@ -78,7 +91,7 @@ export default async function handler(req, res) {
     }
 
     return res.status(502).json({
-      error: 'ClickUp connection unavailable and no cached data found.',
+      error: err.message || 'ClickUp connection unavailable and no cached data found.',
     });
   }
 }
