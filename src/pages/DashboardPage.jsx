@@ -111,24 +111,93 @@ export default function DashboardPage() {
     });
   }, [analyticsDocs]);
 
+  // KPI summary data
+  const kpiData = useMemo(() => {
+    const allActive = tasks.filter((t) => t.status !== 'done');
+    const inboxNew = submissions.filter((s) => s.status === 'new');
+    const totalCompleted = tasks.filter((t) => t.status === 'done');
+    return {
+      overdueCount: overdue.length,
+      activeCount: allActive.length,
+      postsThisWeek: thisWeekPosts.length,
+      inboxUnread: inboxNew.length,
+      completedThisWeek: TEAM.reduce((sum, m) => sum + getThisWeekCompleted(m.key).length, 0),
+    };
+  }, [overdue, tasks, thisWeekPosts, submissions]);
+
   if (tasksLoading || meetingsLoading || submissionsLoading || postsLoading || storiesLoading || analyticsLoading) {
-    return <div className="dash-loading">Loading dashboard...</div>;
+    return (
+      <div className="dash-loading">
+        <div className="dash-loading-spinner" />
+        <span>Loading dashboard...</span>
+      </div>
+    );
   }
 
   return (
     <div className="dashboard-page">
-      <h2 className="dash-greeting">Dashboard</h2>
+      <div className="dash-header">
+        <h2 className="dash-greeting">Dashboard</h2>
+        <span className="dash-date">
+          {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+        </span>
+      </div>
+
+      {/* KPI Cards */}
+      <div className="kpi-strip">
+        <div
+          className={`kpi-card ${kpiData.overdueCount > 0 ? 'kpi-alert' : ''}`}
+          onClick={() => navigate('/tasks')}
+          title={`${kpiData.overdueCount} task${kpiData.overdueCount !== 1 ? 's' : ''} past due date`}
+        >
+          <span className="kpi-value">{kpiData.overdueCount}</span>
+          <span className="kpi-label">Overdue</span>
+        </div>
+        <div
+          className="kpi-card"
+          onClick={() => navigate('/tasks')}
+          title={`${kpiData.activeCount} tasks currently in progress or to-do`}
+        >
+          <span className="kpi-value">{kpiData.activeCount}</span>
+          <span className="kpi-label">Active Tasks</span>
+        </div>
+        <div
+          className="kpi-card"
+          onClick={() => navigate('/calendar')}
+          title={`${kpiData.postsThisWeek} social posts scheduled this & next week`}
+        >
+          <span className="kpi-value">{kpiData.postsThisWeek}</span>
+          <span className="kpi-label">Posts Scheduled</span>
+        </div>
+        <div
+          className="kpi-card"
+          onClick={() => navigate('/inbox')}
+          title={`${kpiData.inboxUnread} new submission${kpiData.inboxUnread !== 1 ? 's' : ''} awaiting review`}
+        >
+          <span className="kpi-value">{kpiData.inboxUnread}</span>
+          <span className="kpi-label">Inbox Unread</span>
+        </div>
+        <div
+          className="kpi-card kpi-positive"
+          onClick={() => navigate('/tasks')}
+          title={`${kpiData.completedThisWeek} tasks completed across all team members this week`}
+        >
+          <span className="kpi-value">{kpiData.completedThisWeek}</span>
+          <span className="kpi-label">Done This Week</span>
+        </div>
+      </div>
 
       {/* Today strip */}
       <div className="today-strip">
         <div className="today-header">
           <h3>Today</h3>
-          <span className="today-date">
-            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-          </span>
+          <span className="today-count">{todayStrip.length} item{todayStrip.length !== 1 ? 's' : ''}</span>
         </div>
         {todayStrip.length === 0 ? (
-          <p className="today-empty">Nothing due today. You are all caught up.</p>
+          <div className="empty-state">
+            <p className="empty-state-text">Nothing due today. You're all caught up!</p>
+            <p className="empty-state-hint">Upcoming tasks will appear here when they're due.</p>
+          </div>
         ) : (
           <div className="today-items">
             {todayStrip.map((t) => (
@@ -136,10 +205,11 @@ export default function DashboardPage() {
                 key={t.id}
                 className={`today-item ${overdue.includes(t) ? 'overdue' : ''}`}
                 onClick={() => navigate('/tasks')}
+                title={`${t.title} — ${overdue.includes(t) ? `Overdue since ${formatDate(t.due)}` : 'Due today'} — Priority: ${t.priority || 'medium'} — Assigned to ${TEAM.find((m) => m.key === t.assignee)?.name || 'Unassigned'}`}
               >
-                <span className="today-priority-dot" style={{ background: priorityColor(t.priority) }} />
+                <span className="today-priority-dot" style={{ background: priorityColor(t.priority) }} title={`Priority: ${t.priority || 'medium'}`} />
                 <span className="today-task-name">{t.title}</span>
-                <span className="today-assignee">
+                <span className="today-assignee" title={TEAM.find((m) => m.key === t.assignee)?.name || 'Unassigned'}>
                   {TEAM.find((m) => m.key === t.assignee)?.initial || '?'}
                 </span>
                 <span className="today-source">Internal</span>
@@ -156,14 +226,22 @@ export default function DashboardPage() {
       <div className="bento-grid">
         {/* Needs Attention */}
         <div className="bento-card bento-attention" onClick={() => navigate('/tasks')}>
-          <h4 className="bento-label">Needs Attention</h4>
+          <div className="bento-card-header">
+            <h4 className="bento-label">Needs Attention</h4>
+            {needsAttention.length > 0 && (
+              <span className="bento-badge">{needsAttention.length}</span>
+            )}
+          </div>
           {needsAttention.length === 0 ? (
-            <p className="bento-empty">Everything is on track.</p>
+            <div className="empty-state">
+              <p className="empty-state-text">Everything is on track.</p>
+              <p className="empty-state-hint">Overdue tasks and new submissions will surface here.</p>
+            </div>
           ) : (
             <ul className="attention-list">
               {needsAttention.map((item, i) => (
-                <li key={i} className="attention-item">
-                  <span className={`attention-type ${item.type}`}>{item.type === 'overdue' ? 'Overdue' : 'Alert'}</span>
+                <li key={i} className="attention-item" title={item.label}>
+                  <span className={`attention-type ${item.type}`}>{item.type === 'overdue' ? 'Overdue' : item.type === 'inbox' ? 'New' : 'Alert'}</span>
                   <span className="attention-label">{item.label}</span>
                 </li>
               ))}
@@ -180,7 +258,12 @@ export default function DashboardPage() {
             .sort((a, b) => a.due.localeCompare(b.due))[0];
 
           return (
-            <div key={member.key} className="bento-card bento-person" onClick={() => navigate('/tasks')}>
+            <div
+              key={member.key}
+              className="bento-card bento-person"
+              onClick={() => navigate('/tasks')}
+              title={`${member.name}: ${active.length} open tasks, ${completedWeek.length} completed this week`}
+            >
               <div className="bento-person-header">
                 <div className="bento-avatar" style={{ background: member.color }}>
                   {member.initial}
@@ -190,9 +273,15 @@ export default function DashboardPage() {
                   <span className="bento-person-count">{active.length} open</span>
                 </div>
               </div>
-              <span className="bento-person-stat">{completedWeek.length} completed this week</span>
-              {nextDue && (
-                <span className="bento-person-next">Next: {nextDue.title} ({formatDate(nextDue.due)})</span>
+              <div className="bento-person-stats">
+                <span className="bento-person-stat">{completedWeek.length} completed this week</span>
+              </div>
+              {nextDue ? (
+                <span className="bento-person-next" title={`Next due: ${nextDue.title} on ${formatDate(nextDue.due)}`}>
+                  Next: {nextDue.title} ({formatDate(nextDue.due)})
+                </span>
+              ) : (
+                <span className="bento-person-next muted">No upcoming deadlines</span>
               )}
             </div>
           );
@@ -200,13 +289,21 @@ export default function DashboardPage() {
 
         {/* This Week on Social */}
         <div className="bento-card bento-calendar" onClick={() => navigate('/calendar')}>
-          <h4 className="bento-label">This Week on Social</h4>
+          <div className="bento-card-header">
+            <h4 className="bento-label">This Week on Social</h4>
+            {thisWeekPosts.length > 0 && (
+              <span className="bento-badge">{thisWeekPosts.length}</span>
+            )}
+          </div>
           {thisWeekPosts.length === 0 ? (
-            <p className="bento-empty">No posts scheduled this week.</p>
+            <div className="empty-state">
+              <p className="empty-state-text">No posts scheduled this week.</p>
+              <p className="empty-state-hint">Head to the Calendar to plan your social content.</p>
+            </div>
           ) : (
             <ul className="social-week-list">
               {thisWeekPosts.slice(0, 5).map((p) => (
-                <li key={p.id} className="social-week-item">
+                <li key={p.id} className="social-week-item" title={p.copy || 'No copy yet'}>
                   <span className="social-week-date">{formatDate(p.scheduledDate)}</span>
                   <span className="social-week-platforms">
                     {(p.platforms || []).join(', ')}
@@ -226,10 +323,13 @@ export default function DashboardPage() {
         <div className="bento-card bento-ensight" onClick={() => navigate('/ensight')}>
           <h4 className="bento-label">Ensight Countdown</h4>
           {ensightData.monthStories.length === 0 ? (
-            <p className="bento-empty">No stories planned for {ensightData.monthLabel}.</p>
+            <div className="empty-state">
+              <p className="empty-state-text">No stories planned for {ensightData.monthLabel}.</p>
+              <p className="empty-state-hint">Add stories in Ensight to track newsletter progress.</p>
+            </div>
           ) : (
             <div className="ensight-countdown-content">
-              <div className="ensight-days-left">
+              <div className="ensight-days-left" title={`${ensightData.daysLeft} days until ${ensightData.monthLabel} newsletter send date`}>
                 <span className="ensight-days-number">{ensightData.daysLeft}</span>
                 <span className="ensight-days-label">days to send</span>
               </div>
@@ -242,7 +342,7 @@ export default function DashboardPage() {
                   const count = ensightData.monthStories.filter((s) => s.stage === stage).length;
                   if (count === 0) return null;
                   return (
-                    <li key={stage} className="ensight-stage-item">
+                    <li key={stage} className="ensight-stage-item" title={`${count} ${count === 1 ? 'story' : 'stories'} in ${stage}`}>
                       <span className={`ensight-stage-badge stage-${stage}`}>{stage}</span>
                       <span className="ensight-stage-count">{count}</span>
                     </li>
@@ -257,11 +357,14 @@ export default function DashboardPage() {
         <div className="bento-card bento-analytics" onClick={() => navigate('/analytics')}>
           <h4 className="bento-label">Analytics Pulse</h4>
           {analyticsPulse.every((p) => !p.lastSynced) ? (
-            <p className="bento-empty">No analytics data synced yet.</p>
+            <div className="empty-state">
+              <p className="empty-state-text">No analytics data synced yet.</p>
+              <p className="empty-state-hint">Connect your platforms in Analytics to see live metrics.</p>
+            </div>
           ) : (
             <ul className="analytics-pulse-list">
               {analyticsPulse.map((platform) => (
-                <li key={platform.key} className="analytics-pulse-item">
+                <li key={platform.key} className="analytics-pulse-item" title={platform.followers != null ? `${platform.label}: ${Number(platform.followers).toLocaleString()} followers` : `${platform.label}: ${platform.lastSynced ? 'Connected' : 'Not connected'}`}>
                   <span className="analytics-pulse-name">{platform.label}</span>
                   {platform.followers != null ? (
                     <span className="analytics-pulse-followers">{Number(platform.followers).toLocaleString()} followers</span>
@@ -281,14 +384,25 @@ export default function DashboardPage() {
 
         {/* Inbox Preview */}
         <div className="bento-card bento-inbox" onClick={() => navigate('/inbox')}>
-          <h4 className="bento-label">Inbox Preview</h4>
+          <div className="bento-card-header">
+            <h4 className="bento-label">Inbox Preview</h4>
+            {(() => {
+              const count = submissions.filter((s) => s.status === 'new').length;
+              return count > 0 ? <span className="bento-badge">{count}</span> : null;
+            })()}
+          </div>
           {(() => {
             const unread = submissions.filter((s) => s.status === 'new').slice(0, 3);
-            if (unread.length === 0) return <p className="bento-empty">No unread submissions.</p>;
+            if (unread.length === 0) return (
+              <div className="empty-state">
+                <p className="empty-state-text">No unread submissions.</p>
+                <p className="empty-state-hint">New story ideas, event requests, and inquiries land here.</p>
+              </div>
+            );
             return (
               <ul className="inbox-preview-list">
                 {unread.map((s) => (
-                  <li key={s.id} className="inbox-preview-item">
+                  <li key={s.id} className="inbox-preview-item" title={`${s.submitterName} — ${({ story_submission: 'Story Submission', social_submission: 'Social Idea', contact: 'Contact Inquiry', event_request: 'Event Request' })[s.type] || s.type}`}>
                     <span className="inbox-preview-type">{
                       { story_submission: 'Story', social_submission: 'Social', contact: 'Contact', event_request: 'Event' }[s.type] || s.type
                     }</span>
@@ -304,7 +418,7 @@ export default function DashboardPage() {
         <div className="bento-card bento-sync" onClick={() => navigate('/meetings')}>
           <h4 className="bento-label">Next Team Sync</h4>
           {nextSync ? (
-            <div className="sync-detail">
+            <div className="sync-detail" title={`${nextSync.title} on ${formatDate(nextSync.date)} with ${(nextSync.attendees || []).join(', ')}`}>
               <span className="sync-title">{nextSync.title}</span>
               <span className="sync-date">{formatDate(nextSync.date)}</span>
               <span className="sync-attendees">
@@ -312,7 +426,10 @@ export default function DashboardPage() {
               </span>
             </div>
           ) : (
-            <p className="bento-empty">No upcoming sync scheduled.</p>
+            <div className="empty-state">
+              <p className="empty-state-text">No upcoming sync scheduled.</p>
+              <p className="empty-state-hint">Schedule a Monday sync in Meetings to keep the team aligned.</p>
+            </div>
           )}
         </div>
 
@@ -320,11 +437,14 @@ export default function DashboardPage() {
         <div className="bento-card bento-recent-meetings" onClick={() => navigate('/meetings')}>
           <h4 className="bento-label">Recent Meetings</h4>
           {recentMeetings.length === 0 ? (
-            <p className="bento-empty">No meetings recorded yet.</p>
+            <div className="empty-state">
+              <p className="empty-state-text">No meetings recorded yet.</p>
+              <p className="empty-state-hint">Meeting notes and action items will appear here.</p>
+            </div>
           ) : (
             <ul className="recent-meetings-list">
               {recentMeetings.map((m) => (
-                <li key={m.id} className="recent-meeting-item">
+                <li key={m.id} className="recent-meeting-item" title={`${m.title} — ${formatDate(m.date)}`}>
                   <span className="recent-meeting-title">{m.title}</span>
                   <span className="recent-meeting-date">{formatDate(m.date)}</span>
                 </li>
