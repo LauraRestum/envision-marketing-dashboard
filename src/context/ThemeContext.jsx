@@ -4,11 +4,11 @@ const ThemeContext = createContext(null);
 
 export function ThemeProvider({ children }) {
   const [mode, setMode] = useState(() => {
-    return localStorage.getItem('envision_theme') || 'dark';
+    return localStorage.getItem('envision_theme') || 'light';
   });
 
   useEffect(() => {
-    document.body.classList.toggle('light-mode', mode === 'light');
+    document.body.classList.toggle('dark-mode', mode === 'dark');
     localStorage.setItem('envision_theme', mode);
   }, [mode]);
 

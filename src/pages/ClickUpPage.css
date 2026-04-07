@@ -70,7 +70,7 @@
 }
 
 .clickup-search:hover {
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(0, 24, 82, 0.15);
 }
 
 .clickup-filter {
@@ -179,20 +179,20 @@
 }
 
 .clickup-task-row:hover {
-  background: rgba(255, 255, 255, 0.04);
-}
-
-body.light-mode .clickup-task-row:hover {
   background: rgba(0, 24, 82, 0.04);
 }
 
+body.dark-mode .clickup-task-row:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
 .clickup-task-row.active {
-  background: rgba(0, 48, 135, 0.2);
+  background: rgba(0, 48, 135, 0.06);
   border-left-color: var(--green);
 }
 
-body.light-mode .clickup-task-row.active {
-  background: rgba(0, 48, 135, 0.06);
+body.dark-mode .clickup-task-row.active {
+  background: rgba(0, 48, 135, 0.2);
 }
 
 .clickup-task-row.overdue {
@@ -246,7 +246,7 @@ body.light-mode .clickup-task-row.active {
   color: var(--blue-mid);
 }
 
-body.light-mode .clickup-status-pill.blue {
+body.dark-mode .clickup-status-pill.blue {
   background: rgba(0, 75, 181, 0.1);
 }
 
@@ -261,22 +261,22 @@ body.light-mode .clickup-status-pill.blue {
 }
 
 .clickup-status-pill.gray {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(0, 24, 82, 0.04);
   color: var(--text-muted);
   opacity: 0.6;
 }
 
-body.light-mode .clickup-status-pill.gray {
-  background: rgba(0, 24, 82, 0.06);
+body.dark-mode .clickup-status-pill.gray {
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .clickup-status-pill.default {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(0, 24, 82, 0.06);
   color: var(--text-muted);
 }
 
-body.light-mode .clickup-status-pill.default {
-  background: rgba(0, 24, 82, 0.06);
+body.dark-mode .clickup-status-pill.default {
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .clickup-assignees {
@@ -367,17 +367,17 @@ body.light-mode .clickup-status-pill.default {
   font-size: 0.688rem;
   font-weight: 600;
   padding: 3px 10px;
-  background: rgba(0, 48, 135, 0.3);
+  background: rgba(0, 48, 135, 0.08);
   border-radius: var(--radius);
   transition: background 0.18s ease;
 }
 
 .drawer-assignee-chip:hover {
-  background: rgba(0, 48, 135, 0.45);
+  background: rgba(0, 48, 135, 0.14);
 }
 
-body.light-mode .drawer-assignee-chip {
-  background: rgba(0, 48, 135, 0.08);
+body.dark-mode .drawer-assignee-chip {
+  background: rgba(0, 48, 135, 0.3);
 }
 
 .drawer-section {

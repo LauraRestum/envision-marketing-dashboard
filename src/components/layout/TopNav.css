@@ -8,15 +8,15 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
-  background: rgba(0, 13, 46, 0.72);
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border-dark);
   z-index: 100;
 }
 
-body.light-mode .top-nav {
-  background: rgba(240, 244, 255, 0.72);
+body.dark-mode .top-nav {
+  background: rgba(0, 13, 46, 0.72);
 }
 
 .top-nav-left {
@@ -99,14 +99,14 @@ body.light-mode .top-nav {
   right: 0;
   width: 320px;
   max-height: 400px;
-  background: var(--blue-dark);
+  background: #fff;
   border: 1px solid var(--border-dark);
   border-radius: var(--radius);
   overflow: hidden;
 }
 
-body.light-mode .bell-dropdown {
-  background: #fff;
+body.dark-mode .bell-dropdown {
+  background: var(--blue-dark);
 }
 
 .bell-header {
@@ -154,7 +154,7 @@ body.light-mode .bell-dropdown {
 }
 
 .bell-item:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(0, 24, 82, 0.03);
 }
 
 .bell-item.unread {
@@ -191,14 +191,14 @@ body.light-mode .bell-dropdown {
   top: calc(100% + 8px);
   right: 0;
   width: 160px;
-  background: var(--blue-dark);
+  background: #fff;
   border: 1px solid var(--border-dark);
   border-radius: var(--radius);
   padding: 8px 0;
 }
 
-body.light-mode .user-dropdown {
-  background: #fff;
+body.dark-mode .user-dropdown {
+  background: var(--blue-dark);
 }
 
 .user-name {

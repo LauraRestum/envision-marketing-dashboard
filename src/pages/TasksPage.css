@@ -227,7 +227,7 @@
 }
 
 .task-column:hover {
-  border-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(0, 24, 82, 0.12);
 }
 
 .column-header {
@@ -342,7 +342,7 @@
 
 /* ── Task cards ── */
 .task-card {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(0, 24, 82, 0.02);
   border: 1px solid var(--border-dark);
   border-radius: var(--radius);
   padding: 10px 12px;
@@ -351,17 +351,17 @@
   transition: border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
 }
 
-body.light-mode .task-card {
-  background: rgba(0, 24, 82, 0.02);
+body.dark-mode .task-card {
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .task-card:hover {
   border-color: var(--blue-mid);
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(0, 24, 82, 0.04);
 }
 
-body.light-mode .task-card:hover {
-  background: rgba(0, 24, 82, 0.04);
+body.dark-mode .task-card:hover {
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .task-card.overdue {
@@ -533,7 +533,7 @@ body.light-mode .task-card:hover {
 }
 
 .modal-card {
-  background: var(--blue-dark);
+  background: #fff;
   border: 1px solid var(--border-dark);
   border-radius: var(--radius);
   padding: 24px;
@@ -547,8 +547,8 @@ body.light-mode .task-card:hover {
   to { transform: translateY(0); opacity: 1; }
 }
 
-body.light-mode .modal-card {
-  background: #fff;
+body.dark-mode .modal-card {
+  background: var(--blue-dark);
 }
 
 .modal-card h3 {

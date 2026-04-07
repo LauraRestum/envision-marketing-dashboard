@@ -23,7 +23,7 @@
   border-radius: var(--radius); padding: 20px;
   transition: border-color 0.18s ease;
 }
-.issue-panel:hover { border-color: rgba(255,255,255,0.12); }
+.issue-panel:hover { border-color: rgba(0, 24, 82, 0.12); }
 .issue-panel-header { margin-bottom: 16px; }
 .issue-label {
   font-size: 0.625rem; font-weight: 600; letter-spacing: 0.06em;
@@ -37,14 +37,14 @@
 }
 .deadline-item {
   flex: 1; min-width: 80px; padding: 8px 6px; text-align: center;
-  background: rgba(255,255,255,0.02); border: 1px solid var(--border-dark);
+  background: rgba(0, 24, 82, 0.02); border: 1px solid var(--border-dark);
   border-radius: var(--radius);
   display: flex; flex-direction: column; gap: 2px;
   transition: background 0.18s ease, border-color 0.18s ease;
 }
-.deadline-item:hover { background: rgba(255,255,255,0.04); }
-body.light-mode .deadline-item { background: rgba(0,24,82,0.02); }
-body.light-mode .deadline-item:hover { background: rgba(0,24,82,0.04); }
+.deadline-item:hover { background: rgba(0, 24, 82, 0.04); }
+body.dark-mode .deadline-item { background: rgba(255, 255, 255, 0.02); }
+body.dark-mode .deadline-item:hover { background: rgba(255, 255, 255, 0.04); }
 .deadline-item.past { opacity: 0.4; }
 .deadline-item.urgent { border-color: rgba(238,85,85,0.5); }
 .deadline-label {
@@ -85,8 +85,8 @@ body.light-mode .deadline-item:hover { background: rgba(0,24,82,0.04); }
   transition: border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
   display: flex; flex-direction: column; gap: 6px;
 }
-.story-card:hover { border-color: var(--blue-mid); background: rgba(255,255,255,0.02); transform: translateY(-1px); }
-body.light-mode .story-card:hover { background: rgba(0,24,82,0.02); }
+.story-card:hover { border-color: var(--blue-mid); background: rgba(0, 24, 82, 0.02); transform: translateY(-1px); }
+body.dark-mode .story-card:hover { background: rgba(255, 255, 255, 0.02); }
 .story-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .story-card-title { font-size: 0.813rem; font-weight: 600; flex: 1; }
 .story-pillar-tag {
