@@ -25,8 +25,20 @@ function formatFollowers(count) {
 export default function AnalyticsPage() {
   const navigate = useNavigate();
   const { addPost } = usePosts();
-  const { analytics, loading: analyticsLoading, refresh: refreshAnalytics, handles } = useSocialAnalytics();
-  const hasAnyHandle = Object.values(handles).some(Boolean);
+  const { analytics, loading: analyticsLoading, refresh: refreshAnalytics, updateFollowers } = useSocialAnalytics();
+  const [editing, setEditing] = useState(null);
+  const [editValue, setEditValue] = useState('');
+
+  function startEdit(platformKey, currentFollowers) {
+    setEditing(platformKey);
+    setEditValue(currentFollowers ? String(currentFollowers) : '');
+  }
+
+  function saveEdit(platformKey) {
+    if (editValue.trim()) updateFollowers(platformKey, editValue.trim());
+    setEditing(null);
+    setEditValue('');
+  }
 
   return (
     <div className="analytics-page">
@@ -42,21 +54,40 @@ export default function AnalyticsPage() {
           const data = analytics[p.key];
           const connected = data?.connected;
           const followers = data?.followers;
-          const cached = data?._cached;
           const lastSynced = data?._lastSynced;
+          const isManual = p.key !== 'linkedin';
+          const isEditing = editing === p.key;
 
           return (
-            <div key={p.key} className={`analytics-platform-card ${connected ? 'connected' : ''}`} title={connected ? `${p.label} — Last synced: ${lastSynced ? new Date(lastSynced).toLocaleString() : 'unknown'}` : `${p.label} — Connect API to see live data`}>
+            <div key={p.key} className={`analytics-platform-card ${connected ? 'connected' : ''}`} title={connected ? `${p.label} — Updated: ${lastSynced ? new Date(lastSynced).toLocaleString() : 'unknown'}` : `${p.label} — ${isManual ? 'Click count to update' : 'Configure in Settings'}`}>
               <span className="analytics-plat-name" style={{ color: p.key === 'tiktok' ? 'var(--text-light)' : p.color }}>{p.label}</span>
-              <span className="analytics-follower-count">
-                {analyticsLoading ? '...' : connected ? formatFollowers(followers) : '--'}
-              </span>
+              {isEditing ? (
+                <form className="analytics-edit-form" onSubmit={(e) => { e.preventDefault(); saveEdit(p.key); }}>
+                  <input
+                    type="text"
+                    className="analytics-edit-input"
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    placeholder="e.g. 2743"
+                    autoFocus
+                    onBlur={() => saveEdit(p.key)}
+                  />
+                </form>
+              ) : (
+                <span
+                  className={`analytics-follower-count ${isManual ? 'editable' : ''}`}
+                  onClick={isManual ? () => startEdit(p.key, followers) : undefined}
+                  title={isManual ? 'Click to update follower count' : undefined}
+                >
+                  {analyticsLoading ? '...' : connected && followers != null ? formatFollowers(followers) : '--'}
+                </span>
+              )}
               <span className="analytics-plat-note">
-                {connected
-                  ? `${cached ? 'Cached' : 'Live'}${lastSynced ? ` · ${new Date(lastSynced).toLocaleTimeString()}` : ''}`
-                  : handles[p.key]
-                    ? `Could not fetch — will retry`
-                    : `Add @handle in Settings`}
+                {connected && lastSynced
+                  ? `${data?._manual ? 'Manual' : 'Live'} · ${new Date(lastSynced).toLocaleDateString()}`
+                  : isManual
+                    ? 'Click count to enter'
+                    : 'Add handle in Settings'}
               </span>
             </div>
           );

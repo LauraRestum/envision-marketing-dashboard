@@ -24,10 +24,7 @@ const INTEGRATIONS = [
 ];
 
 const SOCIAL_PLATFORMS = [
-  { key: 'facebook', label: 'Facebook', placeholder: 'EnvisionUS' },
-  { key: 'instagram', label: 'Instagram', placeholder: 'envisionus' },
-  { key: 'tiktok', label: 'TikTok', placeholder: '@envisionus' },
-  { key: 'linkedin', label: 'LinkedIn', placeholder: 'envision-us' },
+  { key: 'linkedin', label: 'LinkedIn', placeholder: 'envision-inc or full company URL' },
 ];
 
 export default function SettingsPage() {
@@ -293,8 +290,9 @@ export default function SettingsPage() {
       <section className="settings-section">
         <h3>Social Profiles</h3>
         <p className="settings-hint">
-          Enter your public profile handles for each platform. The dashboard scrapes these public pages
-          for follower counts — no API tokens needed.
+          LinkedIn follower counts are scraped automatically from your company page.
+          Facebook, Instagram, and TikTok counts are entered manually on the Analytics page
+          (those platforms block server-side scraping).
         </p>
         <form onSubmit={saveSocialHandles} className="settings-form">
           {SOCIAL_PLATFORMS.map((platform) => {

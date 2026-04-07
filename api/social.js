@@ -1,7 +1,7 @@
 // /api/social.js — Vercel API Route
-// Scrapes public social media profiles for follower counts and basic stats.
-// No API tokens required — reads publicly available page data.
-// Caches results in Firestore so the dashboard isn't hammering public pages.
+// Scrapes LinkedIn company pages for live follower counts.
+// Facebook, Instagram, and TikTok block server-side scraping, so those
+// platforms use manual entry saved directly in Firestore from the frontend.
 
 import getAdminDb from './_db.js';
 
@@ -11,113 +11,9 @@ const HEADERS = {
   'Accept-Language': 'en-US,en;q=0.9',
 };
 
-// ─── Scrapers ────────────────────────────────────────────────
-
-async function scrapeFacebook(handle) {
-  const url = `https://www.facebook.com/${handle}`;
-  const res = await fetch(url, { headers: HEADERS, redirect: 'follow' });
-  if (!res.ok) throw new Error(`Facebook returned ${res.status}`);
-  const html = await res.text();
-
-  // Try og:description which often has "X likes · Y followers"
-  const ogDesc = html.match(/<meta\s+(?:property|name)="og:description"\s+content="([^"]+)"/i)?.[1] || '';
-  const ogTitle = html.match(/<meta\s+(?:property|name)="og:title"\s+content="([^"]+)"/i)?.[1] || handle;
-
-  let followers = parseStatFromText(ogDesc, /(\d[\d,.\s]*[KkMm]?)\s*followers/i);
-  let likes = parseStatFromText(ogDesc, /(\d[\d,.\s]*[KkMm]?)\s*likes/i);
-
-  // Fallback: search for follower counts in JSON-LD or embedded data
-  if (!followers) {
-    const jsonMatch = html.match(/"follower_count"\s*:\s*(\d+)/);
-    if (jsonMatch) followers = parseInt(jsonMatch[1]);
-  }
-
-  return {
-    platform: 'facebook',
-    name: ogTitle,
-    handle,
-    followers: followers || null,
-    likes: likes || null,
-    profileUrl: url,
-  };
-}
-
-async function scrapeInstagram(handle) {
-  const url = `https://www.instagram.com/${handle}/`;
-  const res = await fetch(url, { headers: HEADERS, redirect: 'follow' });
-  if (!res.ok) throw new Error(`Instagram returned ${res.status}`);
-  const html = await res.text();
-
-  // og:description often has "X Followers, Y Following, Z Posts"
-  const ogDesc = html.match(/<meta\s+(?:property|name)="og:description"\s+content="([^"]+)"/i)?.[1] || '';
-  const ogTitle = html.match(/<meta\s+(?:property|name)="og:title"\s+content="([^"]+)"/i)?.[1] || handle;
-
-  let followers = parseStatFromText(ogDesc, /(\d[\d,.\s]*[KkMm]?)\s*Followers/i);
-  let following = parseStatFromText(ogDesc, /(\d[\d,.\s]*[KkMm]?)\s*Following/i);
-  let posts = parseStatFromText(ogDesc, /(\d[\d,.\s]*[KkMm]?)\s*Posts/i);
-
-  // Fallback: embedded JSON
-  if (!followers) {
-    const jsonMatch = html.match(/"edge_followed_by"\s*:\s*\{\s*"count"\s*:\s*(\d+)/);
-    if (jsonMatch) followers = parseInt(jsonMatch[1]);
-  }
-  if (!followers) {
-    const metaMatch = html.match(/"follower_count"\s*:\s*(\d+)/);
-    if (metaMatch) followers = parseInt(metaMatch[1]);
-  }
-
-  return {
-    platform: 'instagram',
-    name: ogTitle,
-    handle,
-    followers: followers || null,
-    following: following || null,
-    posts: posts || null,
-    profileUrl: url,
-  };
-}
-
-async function scrapeTikTok(handle) {
-  // Remove leading @ if present
-  const clean = handle.replace(/^@/, '');
-  const url = `https://www.tiktok.com/@${clean}`;
-  const res = await fetch(url, { headers: HEADERS, redirect: 'follow' });
-  if (!res.ok) throw new Error(`TikTok returned ${res.status}`);
-  const html = await res.text();
-
-  const ogDesc = html.match(/<meta\s+(?:property|name)="og:description"\s+content="([^"]+)"/i)?.[1] || '';
-  const ogTitle = html.match(/<meta\s+(?:property|name)="og:title"\s+content="([^"]+)"/i)?.[1] || clean;
-
-  let followers = parseStatFromText(ogDesc, /(\d[\d,.\s]*[KkMm]?)\s*Followers/i);
-  let likes = parseStatFromText(ogDesc, /(\d[\d,.\s]*[KkMm]?)\s*Likes/i);
-
-  // Fallback: TikTok embeds JSON state in a script tag
-  if (!followers) {
-    const jsonMatch = html.match(/"followerCount"\s*:\s*(\d+)/);
-    if (jsonMatch) followers = parseInt(jsonMatch[1]);
-  }
-  if (!likes) {
-    const jsonMatch = html.match(/"heartCount"\s*:\s*(\d+)/);
-    if (jsonMatch) likes = parseInt(jsonMatch[1]);
-  }
-
-  let videoCount = null;
-  const vidMatch = html.match(/"videoCount"\s*:\s*(\d+)/);
-  if (vidMatch) videoCount = parseInt(vidMatch[1]);
-
-  return {
-    platform: 'tiktok',
-    name: ogTitle,
-    handle: clean,
-    followers: followers || null,
-    likes: likes || null,
-    videoCount,
-    profileUrl: url,
-  };
-}
+// ─── LinkedIn Scraper (the only platform that works server-side) ────
 
 async function scrapeLinkedIn(handle) {
-  // handle can be "company/envision-us" or just "envision-us"
   const slug = handle.replace(/^company\//, '');
   const url = `https://www.linkedin.com/company/${slug}`;
   const res = await fetch(url, { headers: HEADERS, redirect: 'follow' });
@@ -128,7 +24,6 @@ async function scrapeLinkedIn(handle) {
   const ogDesc = html.match(/<meta\s+(?:property|name)="og:description"\s+content="([^"]+)"/i)?.[1] || '';
 
   let followers = parseStatFromText(ogDesc, /(\d[\d,.\s]*[KkMm]?)\s*followers/i);
-
   if (!followers) {
     const jsonMatch = html.match(/"followerCount"\s*:\s*(\d+)/);
     if (jsonMatch) followers = parseInt(jsonMatch[1]);
@@ -144,6 +39,13 @@ async function scrapeLinkedIn(handle) {
 }
 
 // ─── Helpers ─────────────────────────────────────────────────
+
+function extractHandle(input) {
+  let cleaned = input.trim().split('?')[0].split('#')[0].replace(/\/+$/, '');
+  const liMatch = cleaned.match(/linkedin\.com\/company\/([A-Za-z0-9_-]+)/i);
+  if (liMatch) return liMatch[1];
+  return cleaned.replace(/^company\//, '');
+}
 
 function parseStatFromText(text, regex) {
   const match = text.match(regex);
@@ -166,13 +68,6 @@ function parseHumanNumber(str) {
   return isNaN(num) ? null : num;
 }
 
-const SCRAPERS = {
-  facebook: scrapeFacebook,
-  instagram: scrapeInstagram,
-  tiktok: scrapeTikTok,
-  linkedin: scrapeLinkedIn,
-};
-
 // ─── Route Handler ───────────────────────────────────────────
 
 export default async function handler(req, res) {
@@ -180,24 +75,18 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { platform, handle } = req.query;
-
-  if (!platform || !handle) {
-    return res.status(400).json({ error: 'Both platform and handle are required. Example: /api/social?platform=instagram&handle=envisionus' });
+  const { handle } = req.query;
+  if (!handle) {
+    return res.status(400).json({ error: 'handle is required. Example: /api/social?handle=envision-inc' });
   }
 
-  const scraper = SCRAPERS[platform.toLowerCase()];
-  if (!scraper) {
-    return res.status(400).json({ error: `Unknown platform: ${platform}. Use: facebook, instagram, tiktok, linkedin` });
-  }
-
+  const cleanHandle = extractHandle(handle);
   const db = getAdminDb();
-  const cacheKey = `${platform.toLowerCase()}_${handle.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+  const cacheKey = `linkedin_${cleanHandle.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
 
   try {
-    const data = await scraper(handle);
+    const data = await scrapeLinkedIn(cleanHandle);
 
-    // Cache the successful scrape
     await db.collection('analytics_cache').doc(cacheKey).set({
       data,
       lastSynced: new Date().toISOString(),
@@ -209,9 +98,8 @@ export default async function handler(req, res) {
       _lastSynced: new Date().toISOString(),
     });
   } catch (err) {
-    console.error(`Social scrape error (${platform}/${handle}):`, err.message);
+    console.error(`LinkedIn scrape error (${cleanHandle}):`, err.message);
 
-    // Fall back to cached data
     try {
       const cached = await db.collection('analytics_cache').doc(cacheKey).get();
       if (cached.exists) {
@@ -220,7 +108,7 @@ export default async function handler(req, res) {
           ...cachedData.data,
           _cached: true,
           _lastSynced: cachedData.lastSynced,
-          _error: `Could not reach ${platform}. Showing cached data.`,
+          _error: 'Could not reach LinkedIn. Showing cached data.',
         });
       }
     } catch (cacheErr) {
@@ -228,7 +116,7 @@ export default async function handler(req, res) {
     }
 
     return res.status(502).json({
-      error: `Could not scrape ${platform} profile "${handle}". ${err.message}`,
+      error: `Could not scrape LinkedIn profile "${cleanHandle}". ${err.message}`,
     });
   }
 }
