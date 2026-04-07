@@ -4,7 +4,7 @@
 
 import getAdminDb from './_db.js';
 
-const VALID_TYPES = ['story_submission', 'contact', 'event_request'];
+const VALID_TYPES = ['story_submission', 'social_submission', 'contact', 'event_request'];
 
 export default async function handler(req, res) {
   // CORS: allow the external hub domain to POST
