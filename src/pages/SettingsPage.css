@@ -17,7 +17,7 @@
 }
 
 .settings-section:hover {
-  border-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(0, 24, 82, 0.12);
 }
 
 .settings-section h3 {
@@ -51,7 +51,7 @@
 }
 
 .settings-label input:hover {
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(0, 24, 82, 0.15);
 }
 
 .team-row {
@@ -64,15 +64,15 @@
 }
 
 .team-row:hover {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(0, 24, 82, 0.02);
   margin: 0 -12px;
   padding-left: 12px;
   padding-right: 12px;
   border-radius: var(--radius);
 }
 
-body.light-mode .team-row:hover {
-  background: rgba(0, 24, 82, 0.02);
+body.dark-mode .team-row:hover {
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .team-row:last-of-type {
@@ -159,7 +159,7 @@ body.light-mode .team-row:hover {
 }
 
 .settings-btn.secondary:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(0, 24, 82, 0.04);
   border-color: var(--blue-mid);
 }
 
@@ -191,23 +191,23 @@ body.light-mode .team-row:hover {
   flex-direction: column;
   gap: 8px;
   padding: 16px;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(0, 24, 82, 0.02);
   border: 1px solid var(--border-dark);
   border-radius: var(--radius);
   transition: border-color 0.18s ease, background 0.18s ease;
 }
 
 .integration-card:hover {
-  border-color: rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.04);
-}
-
-body.light-mode .integration-card {
-  background: rgba(0, 24, 82, 0.02);
-}
-
-body.light-mode .integration-card:hover {
+  border-color: rgba(0, 24, 82, 0.12);
   background: rgba(0, 24, 82, 0.04);
+}
+
+body.dark-mode .integration-card {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+body.dark-mode .integration-card:hover {
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .integration-header {

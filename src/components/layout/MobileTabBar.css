@@ -10,13 +10,13 @@
     left: 0;
     right: 0;
     height: 56px;
-    background: var(--blue-dark);
+    background: #ffffff;
     border-top: 1px solid var(--border-dark);
     z-index: 100;
   }
 
-  body.light-mode .mobile-tab-bar {
-    background: #ffffff;
+  body.dark-mode .mobile-tab-bar {
+    background: var(--blue-dark);
   }
 
   .mobile-tab {

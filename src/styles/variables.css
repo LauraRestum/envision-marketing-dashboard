@@ -3,12 +3,12 @@
   --blue-dark: #001852;
   --blue-mid: #004bb5;
   --green: #78BE21;
-  --green-dim: rgba(120, 190, 33, 0.15);
-  --text-light: #f0f4ff;
-  --text-muted: rgba(240, 244, 255, 0.52);
-  --bg-body: #000d2e;
-  --surface-card: rgba(0, 24, 82, 0.52);
-  --border-dark: rgba(255, 255, 255, 0.08);
+  --green-dim: rgba(120, 190, 33, 0.12);
+  --text-light: #001852;
+  --text-muted: rgba(0, 24, 82, 0.55);
+  --bg-body: #ffffff;
+  --surface-card: #ffffff;
+  --border-dark: rgba(0, 24, 82, 0.08);
 
   --nav-height: 56px;
   --sidebar-width: 240px;
@@ -16,10 +16,11 @@
   --font: 'Montserrat', sans-serif;
 }
 
-body.light-mode {
-  --bg-body: #f0f4ff;
-  --surface-card: #ffffff;
-  --text-light: #001852;
-  --text-muted: rgba(0, 24, 82, 0.55);
-  --border-dark: rgba(0, 24, 82, 0.1);
+body.dark-mode {
+  --bg-body: #000d2e;
+  --surface-card: rgba(0, 24, 82, 0.52);
+  --text-light: #f0f4ff;
+  --text-muted: rgba(240, 244, 255, 0.52);
+  --border-dark: rgba(255, 255, 255, 0.08);
+  --green-dim: rgba(120, 190, 33, 0.15);
 }
