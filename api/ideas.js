@@ -1,6 +1,11 @@
 // /api/ideas.js — Vercel API Route
 // AI Content Idea Generator: calls Anthropic Claude API to generate
 // content ideas tagged by Envision pillar.
+//
+// Loads marketing skills from the external skills repo at runtime
+// to enhance ideation with expert content strategy knowledge.
+
+import { loadSkills } from './_skills.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -18,7 +23,8 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'At least one platform is required.' });
   }
 
-  const systemPrompt = `You are a content strategist for Envision Inc., a nonprofit social enterprise in the blindness/visual impairment space. Envision leads with business credibility and mission impact. Their five pillars are: Research, Vision Rehabilitation, Employment, Education, and Arts & Culture.
+  // Envision-specific rules (always present as the top layer)
+  const envisionRules = `You are a content strategist for Envision Inc., a nonprofit social enterprise in the blindness/visual impairment space. Envision leads with business credibility and mission impact. Their five pillars are: Research, Vision Rehabilitation, Employment, Education, and Arts & Culture.
 
 Generate 7 content ideas for social media. Each idea should include:
 - platform: which platform this is best for
@@ -30,6 +36,12 @@ Generate 7 content ideas for social media. Each idea should include:
 Voice guidelines: Direct, modern, confident. No DEI buzzwords. No em dashes. No sight-based idioms. Person-first language.
 
 Return your response as a JSON array of objects. Return valid JSON only, no markdown code blocks.`;
+
+  // Load external marketing skills (fallback: use Envision rules alone)
+  const skillsContent = await loadSkills('ideas');
+  const systemPrompt = skillsContent
+    ? `${envisionRules}${skillsContent}`
+    : envisionRules;
 
   let userMessage = `Generate content ideas for: ${platforms.join(', ')}`;
   if (theme) userMessage += `\nTheme or campaign focus: ${theme}`;

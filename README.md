@@ -126,6 +126,44 @@ Use the Settings page inside the dashboard:
 - **No file upload in V1:** Content Calendar asset fields are text descriptions, not file uploads.
 - **Analytics trends are sample data until APIs connect:** The 30-day engagement chart shows generated sample data. Once platform APIs are connected, the chart will display real daily metrics from each platform.
 
+## AI Skills System
+
+The AI features (Social Formatter and Content Idea Generator) are powered by an external skills repo:
+
+**Repo:** [LauraRestum/marketingskills](https://github.com/LauraRestum/marketingskills)
+
+### How it works
+
+At runtime, when `/api/format.js` or `/api/ideas.js` receives a request, it fetches the relevant skill files directly from GitHub's raw content URL and injects them into the Claude API system prompt. No skill files are copied into this repo. Updates to the skills repo automatically reflect in the dashboard with no code changes or redeployment needed.
+
+### Which skills power which feature
+
+| API Route | Skills loaded | Purpose |
+|-----------|--------------|---------|
+| `/api/format.js` (Social Formatter) | social-content, platforms, post-templates, copywriting, copy-editing, marketing-psychology | Platform-specific formatting, hooks, copywriting quality |
+| `/api/ideas.js` (Idea Generator) | marketing-ideas, ideas-by-category, content-strategy, social-content, platforms, marketing-psychology | Content ideation, strategy frameworks, platform knowledge |
+
+### Prompt layering
+
+The system prompt is built in two layers:
+1. **Envision brand rules** (hardcoded, always present): brand voice, tone, accessibility language, platform format rules
+2. **Marketing skills** (fetched from GitHub at runtime): expert frameworks, templates, and strategies
+
+Envision-specific rules always take priority. When Envision-specific skills are added to the skills repo later, they will automatically be available with no changes needed here.
+
+### Fallback behavior
+
+If the GitHub fetch fails (network issue, repo unavailable), the AI features fall back to the hardcoded Envision brand rules alone. The features never break due to a skills repo outage.
+
+### How to add new skills
+
+1. Create a new skill directory in the `marketingskills` repo under `skills/your-skill-name/`
+2. Add a `SKILL.md` file with the skill content
+3. Add any reference files under `skills/your-skill-name/references/`
+4. To wire it into this dashboard, add the file path to the `SKILL_SETS` object in `api/_skills.js`
+
+Skills are cached in memory for 1 hour to avoid excessive GitHub API calls.
+
 ## Architecture
 
 ```

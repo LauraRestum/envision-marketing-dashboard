@@ -1,6 +1,11 @@
 // /api/format.js — Vercel API Route
 // Social Formatter: calls Anthropic Claude API to reformat content
 // for multiple social platforms.
+//
+// Loads marketing skills from the external skills repo at runtime
+// to enhance the system prompt with expert copywriting and platform knowledge.
+
+import { loadSkills } from './_skills.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -27,7 +32,8 @@ export default async function handler(req, res) {
 
   const platformPrompts = platforms.map((p) => platformInstructions[p] || '').filter(Boolean).join('\n');
 
-  const systemPrompt = `You are a social media copywriter for Envision Inc., a nonprofit social enterprise that leads with business credibility and mission impact. Write in a direct, modern, confident voice. Business first, mission second. No DEI buzzwords. No em dashes. No AI-sounding phrasing. No sight-based idioms (avoid "see", "look", "vision" in a metaphorical sense, use "understand", "experience", "feel" instead). Person-first language always. Sentence case on all copy. No exclamation points unless the user's source material contains them.
+  // Envision-specific brand rules (always present as the top layer)
+  const envisionRules = `You are a social media copywriter for Envision Inc., a nonprofit social enterprise that leads with business credibility and mission impact. Write in a direct, modern, confident voice. Business first, mission second. No DEI buzzwords. No em dashes. No AI-sounding phrasing. No sight-based idioms (avoid "see", "look", "vision" in a metaphorical sense, use "understand", "experience", "feel" instead). Person-first language always. Sentence case on all copy. No exclamation points unless the user's source material contains them.
 
 Format rules per platform:
 ${platformPrompts}
@@ -36,6 +42,12 @@ Return your response as a JSON object with platform keys and string values. Exam
 {"facebook": "post copy here", "instagram": "post copy here"}
 
 Only include the platforms requested. Return valid JSON only, no markdown code blocks.`;
+
+  // Load external marketing skills (fallback: use Envision rules alone)
+  const skillsContent = await loadSkills('format');
+  const systemPrompt = skillsContent
+    ? `${envisionRules}${skillsContent}`
+    : envisionRules;
 
   const userMessage = context
     ? `Content to reformat:\n${content}\n\nAdditional context: ${context}`
@@ -65,10 +77,8 @@ Only include the platforms requested. Return valid JSON only, no markdown code b
     const data = await response.json();
     const text = data.content?.[0]?.text || '';
 
-    // Parse the JSON response
     let parsed;
     try {
-      // Strip markdown code blocks if present
       const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       parsed = JSON.parse(cleaned);
     } catch {
