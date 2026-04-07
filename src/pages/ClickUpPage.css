@@ -1,5 +1,5 @@
 .clickup-page {
-  max-width: 1200px;
+  max-width: 1400px;
 }
 
 .clickup-header {
@@ -53,8 +53,9 @@
   display: flex; flex-direction: column; gap: 6px;
   margin-bottom: 16px;
 }
+
 .clickup-debug {
-  font-size: 0.688rem; color: var(--text-muted);
+  font-size: 0.688rem;
   white-space: pre-wrap; word-break: break-all;
   margin: 0; padding: 8px;
   background: rgba(0,0,0,0.05); border-radius: 4px;
@@ -80,6 +81,17 @@
   border-color: rgba(0, 24, 82, 0.15);
 }
 
+.clickup-filter {
+  padding: 8px 12px;
+  font-size: 0.75rem;
+  min-width: 130px;
+  transition: border-color 0.18s ease;
+}
+
+.clickup-filter:hover {
+  border-color: var(--blue-mid);
+}
+
 /* ── Loading & Empty ── */
 .clickup-loading {
   display: flex;
@@ -99,11 +111,6 @@
   border-top-color: var(--green);
   border-radius: 50%;
   animation: clickup-spin 0.8s linear infinite;
-}
-
-.clickup-loading-spinner.small {
-  width: 16px;
-  height: 16px;
 }
 
 @keyframes clickup-spin {
@@ -132,175 +139,100 @@
   font-style: italic;
 }
 
-/* ── Projects Layout ── */
-.clickup-projects-layout {
+/* ── Board Layout ── */
+.clickup-board-layout {
   display: grid;
   grid-template-columns: 1fr 380px;
   gap: 12px;
   align-items: start;
 }
 
-.clickup-project-list {
+.clickup-board {
   display: flex;
-  flex-direction: column;
   gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
 }
 
-/* ── Space Groups ── */
-.clickup-space-group {
+/* ── Status Columns ── */
+.clickup-status-column {
+  min-width: 240px;
+  max-width: 300px;
+  flex: 1;
   background: var(--surface-card);
   border: 1px solid var(--border-dark);
   border-radius: var(--radius);
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-.clickup-space-header {
-  font-size: 0.625rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  padding: 10px 16px 6px;
-}
-
-/* ── Project Rows ── */
-.clickup-project-block {
-  border-top: 1px solid var(--border-dark);
-}
-
-.clickup-project-row {
+.clickup-column-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  width: 100%;
-  padding: 12px 16px;
-  text-align: left;
-  transition: background 0.18s ease;
-}
-
-.clickup-project-row:hover {
-  background: rgba(0, 24, 82, 0.04);
-}
-
-body.dark-mode .clickup-project-row:hover {
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.clickup-project-row.expanded {
-  background: rgba(0, 48, 135, 0.04);
+  padding: 10px 12px;
   border-bottom: 1px solid var(--border-dark);
 }
 
-body.dark-mode .clickup-project-row.expanded {
-  background: rgba(0, 48, 135, 0.15);
-}
-
-.clickup-project-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.clickup-expand-icon {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  width: 12px;
-  flex-shrink: 0;
-}
-
-.clickup-project-name {
-  font-size: 0.875rem;
+.clickup-column-count {
+  font-size: 0.688rem;
   font-weight: 600;
-}
-
-.clickup-project-folder {
-  display: block;
-  font-size: 0.688rem;
-  color: var(--text-muted);
-  margin-top: 1px;
-}
-
-.clickup-project-count {
-  font-size: 0.688rem;
-  color: var(--text-muted);
-  flex-shrink: 0;
-}
-
-/* ── Tasks within project ── */
-.clickup-project-tasks {
-  padding-left: 20px;
-}
-
-.clickup-tasks-loading {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-  font-size: 0.75rem;
   color: var(--text-muted);
 }
 
-.clickup-tasks-empty {
-  padding: 12px 16px;
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  font-style: italic;
-}
-
-/* ── Task list ── */
-.clickup-task-row {
+.clickup-column-tasks {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 1px;
+  max-height: calc(100vh - 280px);
+  overflow-y: auto;
+}
+
+/* ── Task Cards ── */
+.clickup-task-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   width: 100%;
-  padding: 10px 16px;
+  padding: 10px 12px;
   text-align: left;
   border-bottom: 1px solid var(--border-dark);
   border-left: 3px solid transparent;
   transition: background 0.18s ease, border-color 0.18s ease;
 }
 
-.clickup-task-row:last-child {
+.clickup-task-card:last-child {
   border-bottom: none;
 }
 
-.clickup-task-row:hover {
+.clickup-task-card:hover {
   background: rgba(0, 24, 82, 0.04);
 }
 
-body.dark-mode .clickup-task-row:hover {
+body.dark-mode .clickup-task-card:hover {
   background: rgba(255, 255, 255, 0.04);
 }
 
-.clickup-task-row.active {
+.clickup-task-card.active {
   background: rgba(0, 48, 135, 0.06);
   border-left-color: var(--green);
 }
 
-body.dark-mode .clickup-task-row.active {
+body.dark-mode .clickup-task-card.active {
   background: rgba(0, 48, 135, 0.2);
 }
 
-.clickup-task-row.overdue {
+.clickup-task-card.overdue {
   border-left-color: rgba(238, 85, 85, 0.6);
 }
 
-.clickup-task-row.overdue:hover {
+.clickup-task-card.overdue:hover {
   background: rgba(238, 85, 85, 0.04);
-}
-
-.clickup-task-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
 }
 
 .clickup-task-name {
   font-size: 0.813rem;
   font-weight: 600;
-  flex: 1;
   word-break: break-word;
 }
 
@@ -514,26 +446,35 @@ body.dark-mode .drawer-assignee-chip {
 
 /* ── Responsive ── */
 @media (max-width: 1024px) {
-  .clickup-projects-layout {
-    grid-template-columns: 1fr 320px;
+  .clickup-board-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .clickup-drawer {
+    position: static;
   }
 }
 
 @media (max-width: 768px) {
-  .clickup-projects-layout {
-    grid-template-columns: 1fr;
+  .clickup-board {
+    flex-direction: column;
+  }
+
+  .clickup-status-column {
+    min-width: unset;
+    max-width: unset;
   }
 
   .clickup-toolbar {
     flex-direction: column;
   }
 
-  .clickup-drawer {
-    position: static;
-  }
-
   .clickup-header {
     flex-wrap: wrap;
+  }
+
+  .clickup-column-tasks {
+    max-height: 300px;
   }
 }
 
@@ -543,10 +484,10 @@ body.dark-mode .drawer-assignee-chip {
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
-  .clickup-task-row,
-  .clickup-project-row,
+  .clickup-task-card,
   .clickup-refresh-btn,
   .clickup-search,
+  .clickup-filter,
   .drawer-close,
   .drawer-assignee-chip,
   .drawer-open-link {

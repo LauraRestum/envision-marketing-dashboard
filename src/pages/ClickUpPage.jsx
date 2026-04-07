@@ -16,32 +16,33 @@ const PRIORITY_LABELS = { 1: 'Urgent', 2: 'High', 3: 'Normal', 4: 'Low' };
 const PRIORITY_COLORS = { 1: '#e55', 2: '#f0a030', 3: 'var(--blue-mid)', 4: 'var(--text-muted)' };
 
 export default function ClickUpPage() {
-  const [projects, setProjects] = useState([]);
-  const [expandedProject, setExpandedProject] = useState(null);
-  const [projectTasks, setProjectTasks] = useState({});
-  const [loadingTasks, setLoadingTasks] = useState({});
+  const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [cached, setCached] = useState(false);
   const [lastSynced, setLastSynced] = useState(null);
-  const [debugInfo, setDebugInfo] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
+  const [debugInfo, setDebugInfo] = useState(null);
+
+  const [filterAssignee, setFilterAssignee] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [filterPriority, setFilterPriority] = useState('');
   const [search, setSearch] = useState('');
 
-  const fetchProjects = useCallback(async () => {
+  const fetchTasks = useCallback(async () => {
     setDebugInfo(null);
     setLoading(true);
 
     try {
-      // First get teams to find the Envision team
-      const teamsController = new AbortController();
-      const teamsTimeout = setTimeout(() => teamsController.abort(), 20000);
-      let teamsRes;
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 25000);
+      let res;
       try {
-        teamsRes = await fetch('/api/clickup?action=teams', { signal: teamsController.signal });
-        clearTimeout(teamsTimeout);
+        // Fetch directly from the marketing list — single fast API call
+        res = await fetch('/api/clickup?action=list_tasks', { signal: controller.signal });
+        clearTimeout(timeout);
       } catch (fetchErr) {
-        clearTimeout(teamsTimeout);
+        clearTimeout(timeout);
         setError(fetchErr.name === 'AbortError'
           ? 'ClickUp request timed out. The API may be slow or unreachable from Vercel.'
           : `Network error reaching ClickUp: ${fetchErr.message}`);
@@ -49,66 +50,34 @@ export default function ClickUpPage() {
         return;
       }
 
-      const teamsText = await teamsRes.text();
-      let teamsData;
+      const text = await res.text();
+      let data;
       try {
-        teamsData = JSON.parse(teamsText);
+        data = JSON.parse(text);
       } catch {
-        setError(`ClickUp API returned invalid response (HTTP ${teamsRes.status}).`);
-        setDebugInfo(`HTTP ${teamsRes.status}: ${teamsText.slice(0, 300)}`);
+        setError(`ClickUp API returned invalid response (HTTP ${res.status}).`);
+        setDebugInfo(`HTTP ${res.status}: ${text.slice(0, 300)}`);
         setLoading(false);
         return;
       }
 
-      if (teamsData.error && !teamsData._cached) {
-        setError(teamsData.error);
+      if (data.error && !data._cached) {
+        setError(data.error);
+        setDebugInfo(`API error: ${data.error}`);
         setLoading(false);
         return;
       }
 
-      const teams = teamsData.teams || [];
-      if (teams.length === 0) {
-        setError('No ClickUp teams found. Check your API token in Vercel settings.');
-        setLoading(false);
-        return;
-      }
-
-      const envisionTeam = teams.find((t) => t.name.toLowerCase().includes('envision'));
-      const teamId = envisionTeam ? envisionTeam.id : teams[0].id;
-
-      // Fetch project hierarchy (spaces > folders > lists)
-      const projController = new AbortController();
-      const projTimeout = setTimeout(() => projController.abort(), 30000);
-      let projData;
-      try {
-        const projRes = await fetch(`/api/clickup?action=projects&team_id=${teamId}`, { signal: projController.signal });
-        projData = await projRes.json();
-        clearTimeout(projTimeout);
-      } catch (fetchErr) {
-        clearTimeout(projTimeout);
-        setError(fetchErr.name === 'AbortError'
-          ? 'ClickUp projects request timed out.'
-          : `Failed to fetch projects: ${fetchErr.message}`);
-        setLoading(false);
-        return;
-      }
-
-      if (projData.error && !projData._cached) {
-        setError(projData.error);
-        setLoading(false);
-        return;
-      }
-
-      if (projData._error) {
-        setError(projData._error);
+      if (data._error) {
+        setError(data._error);
         setCached(true);
       } else {
         setError('');
-        setCached(!!projData._cached);
+        setCached(!!data._cached);
       }
 
-      setProjects(projData.projects || []);
-      setLastSynced(projData._lastSynced || null);
+      setTasks(data.tasks || []);
+      setLastSynced(data._lastSynced || null);
     } catch (err) {
       setError(`Unexpected error: ${err.message}`);
       setDebugInfo(err.stack?.slice(0, 400) || err.message);
@@ -117,62 +86,74 @@ export default function ClickUpPage() {
     setLoading(false);
   }, []);
 
-  const fetchTasksForList = useCallback(async (listId) => {
-    if (projectTasks[listId]) return; // already loaded
-    setLoadingTasks((prev) => ({ ...prev, [listId]: true }));
-
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 25000);
-      const res = await fetch(`/api/clickup?action=list_tasks&list_id=${listId}`, { signal: controller.signal });
-      const data = await res.json();
-      clearTimeout(timeout);
-      setProjectTasks((prev) => ({ ...prev, [listId]: data.tasks || [] }));
-    } catch (err) {
-      setProjectTasks((prev) => ({ ...prev, [listId]: [] }));
-    }
-
-    setLoadingTasks((prev) => ({ ...prev, [listId]: false }));
-  }, [projectTasks]);
-
   useEffect(() => {
-    fetchProjects();
-    const interval = setInterval(fetchProjects, 5 * 60 * 1000);
+    fetchTasks();
+    const interval = setInterval(fetchTasks, 5 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [fetchProjects]);
+  }, [fetchTasks]);
 
-  const handleExpandProject = useCallback((projectId) => {
-    if (expandedProject === projectId) {
-      setExpandedProject(null);
-      setSelectedTask(null);
-    } else {
-      setExpandedProject(projectId);
-      setSelectedTask(null);
-      fetchTasksForList(projectId);
-    }
-  }, [expandedProject, fetchTasksForList]);
-
-  // Group projects by space
-  const groupedProjects = useMemo(() => {
-    const groups = new Map();
-    let filtered = projects;
-    if (search) {
-      const q = search.toLowerCase();
-      filtered = projects.filter((p) => p.name.toLowerCase().includes(q) || (p.folder && p.folder.toLowerCase().includes(q)));
-    }
-    filtered.forEach((p) => {
-      const key = p.space || 'Other';
-      if (!groups.has(key)) groups.set(key, []);
-      groups.get(key).push(p);
+  // Derive unique assignees from actual task data
+  const allAssignees = useMemo(() => {
+    const map = new Map();
+    tasks.forEach((t) => {
+      (t.assignees || []).forEach((a) => {
+        const name = a.username || a.email || '';
+        if (name && !map.has(name)) map.set(name, name);
+      });
     });
-    return Array.from(groups.entries());
-  }, [projects, search]);
+    return Array.from(map.values()).sort();
+  }, [tasks]);
+
+  const allStatuses = useMemo(() => {
+    const set = new Set();
+    tasks.forEach((t) => {
+      if (t.status?.status) set.add(t.status.status);
+    });
+    return Array.from(set).sort();
+  }, [tasks]);
+
+  const filtered = useMemo(() => {
+    return tasks.filter((t) => {
+      if (search) {
+        const q = search.toLowerCase();
+        if (!t.name?.toLowerCase().includes(q)) return false;
+      }
+      if (filterAssignee) {
+        const assignees = (t.assignees || []).map((a) => (a.username || a.email || '').toLowerCase());
+        if (!assignees.some((a) => a === filterAssignee.toLowerCase())) return false;
+      }
+      if (filterStatus) {
+        if ((t.status?.status || '').toLowerCase() !== filterStatus.toLowerCase()) return false;
+      }
+      if (filterPriority) {
+        if (String(t.priority?.id) !== filterPriority) return false;
+      }
+      return true;
+    });
+  }, [tasks, search, filterAssignee, filterStatus, filterPriority]);
+
+  // Group filtered tasks by status for a board-like view
+  const groupedByStatus = useMemo(() => {
+    const groups = new Map();
+    filtered.forEach((t) => {
+      const status = t.status?.status || 'No Status';
+      if (!groups.has(status)) groups.set(status, []);
+      groups.get(status).push(t);
+    });
+    // Sort: active statuses first, done/closed last
+    const order = ['to do', 'open', 'in progress', 'in review', 'blocked', 'done', 'complete', 'closed'];
+    return Array.from(groups.entries()).sort((a, b) => {
+      const ai = order.indexOf(a[0].toLowerCase());
+      const bi = order.indexOf(b[0].toLowerCase());
+      return (ai === -1 ? 50 : ai) - (bi === -1 ? 50 : bi);
+    });
+  }, [filtered]);
 
   if (loading) {
     return (
       <div className="clickup-loading">
         <div className="clickup-loading-spinner" />
-        <span>Loading ClickUp projects...</span>
+        <span>Loading marketing projects...</span>
       </div>
     );
   }
@@ -181,14 +162,14 @@ export default function ClickUpPage() {
     <div className="clickup-page">
       <div className="clickup-header">
         <div>
-          <h2>ClickUp Projects</h2>
+          <h2>Marketing Projects</h2>
           {lastSynced && (
             <span className="clickup-sync-time">
               {cached && 'Cached data. '}Last synced: {new Date(lastSynced).toLocaleString()}
             </span>
           )}
         </div>
-        <button className="clickup-refresh-btn" onClick={fetchProjects} disabled={loading} title="Refresh projects from ClickUp API">
+        <button className="clickup-refresh-btn" onClick={fetchTasks} disabled={loading} title="Refresh from ClickUp">
           Refresh
         </button>
       </div>
@@ -204,87 +185,66 @@ export default function ClickUpPage() {
         <input
           className="clickup-search"
           type="text"
-          placeholder="Search projects..."
+          placeholder="Search tasks..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          title="Search ClickUp projects by name"
         />
+        <select className="clickup-filter" value={filterAssignee} onChange={(e) => setFilterAssignee(e.target.value)}>
+          <option value="">All assignees</option>
+          {allAssignees.map((a) => <option key={a} value={a}>{a}</option>)}
+        </select>
+        <select className="clickup-filter" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+          <option value="">All statuses</option>
+          {allStatuses.map((s) => <option key={s} value={s}>{s}</option>)}
+        </select>
+        <select className="clickup-filter" value={filterPriority} onChange={(e) => setFilterPriority(e.target.value)}>
+          <option value="">All priorities</option>
+          {Object.entries(PRIORITY_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+        </select>
       </div>
 
-      {projects.length === 0 && !error ? (
+      {tasks.length === 0 && !error ? (
         <div className="clickup-empty">
-          <p className="clickup-empty-text">No projects found.</p>
-          <p className="clickup-empty-hint">Make sure your ClickUp API token is configured in Settings and your workspace has lists.</p>
+          <p className="clickup-empty-text">No marketing tasks found.</p>
+          <p className="clickup-empty-hint">Make sure your ClickUp API token is configured in Settings.</p>
         </div>
       ) : (
-        <div className="clickup-projects-layout">
-          <div className="clickup-project-list">
-            {groupedProjects.map(([spaceName, spaceProjects]) => (
-              <div key={spaceName} className="clickup-space-group">
-                <div className="clickup-space-header">{spaceName}</div>
-                {spaceProjects.map((project) => (
-                  <div key={project.id} className="clickup-project-block">
+        <div className="clickup-board-layout">
+          <div className="clickup-board">
+            {groupedByStatus.map(([status, statusTasks]) => (
+              <div key={status} className="clickup-status-column">
+                <div className="clickup-column-header">
+                  <StatusPill status={status} />
+                  <span className="clickup-column-count">{statusTasks.length}</span>
+                </div>
+                <div className="clickup-column-tasks">
+                  {statusTasks.map((task) => (
                     <button
-                      className={`clickup-project-row ${expandedProject === project.id ? 'expanded' : ''}`}
-                      onClick={() => handleExpandProject(project.id)}
-                      title={`${project.name}${project.folder ? ` (${project.folder})` : ''}`}
+                      key={task.id}
+                      className={`clickup-task-card ${selectedTask?.id === task.id ? 'active' : ''} ${isOverdue(task) ? 'overdue' : ''}`}
+                      onClick={() => setSelectedTask(task)}
                     >
-                      <div className="clickup-project-info">
-                        <span className="clickup-expand-icon">{expandedProject === project.id ? '\u25BE' : '\u25B8'}</span>
-                        <div>
-                          <span className="clickup-project-name">{project.name}</span>
-                          {project.folder && <span className="clickup-project-folder">{project.folder}</span>}
-                        </div>
-                      </div>
-                      {project.taskCount != null && (
-                        <span className="clickup-project-count">{project.taskCount} task{project.taskCount !== 1 ? 's' : ''}</span>
-                      )}
-                    </button>
-
-                    {expandedProject === project.id && (
-                      <div className="clickup-project-tasks">
-                        {loadingTasks[project.id] ? (
-                          <div className="clickup-tasks-loading">
-                            <div className="clickup-loading-spinner small" />
-                            <span>Loading tasks...</span>
-                          </div>
-                        ) : (projectTasks[project.id] || []).length === 0 ? (
-                          <div className="clickup-tasks-empty">No active tasks in this project.</div>
-                        ) : (
-                          (projectTasks[project.id] || []).map((task) => (
-                            <button
-                              key={task.id}
-                              className={`clickup-task-row ${selectedTask?.id === task.id ? 'active' : ''} ${isOverdue(task) ? 'overdue' : ''}`}
-                              onClick={() => setSelectedTask(task)}
-                            >
-                              <div className="clickup-task-top">
-                                <span className="clickup-task-name">{task.name}</span>
-                                {task.priority && (
-                                  <span className="clickup-priority-flag" style={{ color: PRIORITY_COLORS[task.priority.id] || 'var(--text-muted)' }}>
-                                    {PRIORITY_LABELS[task.priority.id] || task.priority.priority}
-                                  </span>
-                                )}
-                              </div>
-                              <div className="clickup-task-meta">
-                                <StatusPill status={task.status?.status} />
-                                {(task.assignees || []).length > 0 && (
-                                  <span className="clickup-assignees">
-                                    {task.assignees.map((a) => a.username || a.email || '').join(', ')}
-                                  </span>
-                                )}
-                                {task.due_date && (
-                                  <span className={`clickup-due ${isOverdue(task) ? 'overdue-text' : ''}`}>
-                                    {formatClickUpDate(task.due_date)}
-                                  </span>
-                                )}
-                              </div>
-                            </button>
-                          ))
+                      <span className="clickup-task-name">{task.name}</span>
+                      <div className="clickup-task-meta">
+                        {task.priority && (
+                          <span className="clickup-priority-flag" style={{ color: PRIORITY_COLORS[task.priority.id] || 'var(--text-muted)' }}>
+                            {PRIORITY_LABELS[task.priority.id] || task.priority.priority}
+                          </span>
+                        )}
+                        {(task.assignees || []).length > 0 && (
+                          <span className="clickup-assignees">
+                            {task.assignees.map((a) => a.username || a.email || '').join(', ')}
+                          </span>
+                        )}
+                        {task.due_date && (
+                          <span className={`clickup-due ${isOverdue(task) ? 'overdue-text' : ''}`}>
+                            {formatClickUpDate(task.due_date)}
+                          </span>
                         )}
                       </div>
-                    )}
-                  </div>
-                ))}
+                    </button>
+                  ))}
+                </div>
               </div>
             ))}
           </div>
@@ -347,7 +307,7 @@ function TaskDrawer({ task, onClose }) {
         )}
         {t.list && (
           <div className="drawer-field">
-            <span className="drawer-field-label">Project</span>
+            <span className="drawer-field-label">List</span>
             <span>{t.list.name}</span>
           </div>
         )}
