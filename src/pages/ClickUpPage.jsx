@@ -30,6 +30,7 @@ export default function ClickUpPage() {
   const [selectedTask, setSelectedTask] = useState(null);
   const [debugInfo, setDebugInfo] = useState(null);
 
+  const [filterList, setFilterList] = useState('');
   const [filterAssignee, setFilterAssignee] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [filterPriority, setFilterPriority] = useState('');
@@ -38,7 +39,7 @@ export default function ClickUpPage() {
   const fetchTasks = useCallback(async () => {
     setDebugInfo(null);
     try {
-      // First get teams to find the team_id
+      // First get teams to find the Envision team
       const teamsRes = await fetch('/api/clickup?action=teams');
       const teamsText = await teamsRes.text();
       let teamsData;
@@ -66,7 +67,10 @@ export default function ClickUpPage() {
         return;
       }
 
-      const teamId = teams[0].id;
+      // Prefer "Envision" team, fall back to first team
+      const envisionTeam = teams.find((t) => t.name.toLowerCase().includes('envision'));
+      const teamId = envisionTeam ? envisionTeam.id : teams[0].id;
+
       const tasksRes = await fetch(`/api/clickup?action=tasks&team_id=${teamId}`);
       const tasksData = await tasksRes.json();
 
@@ -93,11 +97,22 @@ export default function ClickUpPage() {
     return () => clearInterval(interval);
   }, [fetchTasks]);
 
+  const allLists = useMemo(() => {
+    const map = new Map();
+    tasks.forEach((t) => {
+      if (t.list?.id && t.list?.name) map.set(t.list.id, t.list.name);
+    });
+    return Array.from(map.entries()).sort((a, b) => a[1].localeCompare(b[1]));
+  }, [tasks]);
+
   const filtered = useMemo(() => {
     return tasks.filter((t) => {
       if (search) {
         const q = search.toLowerCase();
         if (!t.name?.toLowerCase().includes(q)) return false;
+      }
+      if (filterList) {
+        if (t.list?.id !== filterList) return false;
       }
       if (filterAssignee) {
         const assignees = (t.assignees || []).map((a) => a.username?.toLowerCase() || a.email?.toLowerCase() || '');
@@ -114,7 +129,7 @@ export default function ClickUpPage() {
       }
       return true;
     });
-  }, [tasks, search, filterAssignee, filterStatus, filterPriority]);
+  }, [tasks, search, filterList, filterAssignee, filterStatus, filterPriority]);
 
   const allStatuses = useMemo(() => {
     const set = new Set();
@@ -172,6 +187,10 @@ export default function ClickUpPage() {
           onChange={(e) => setSearch(e.target.value)}
           title="Search ClickUp tasks by name"
         />
+        <select className="clickup-filter" value={filterList} onChange={(e) => setFilterList(e.target.value)} title="Filter by list">
+          <option value="">All lists</option>
+          {allLists.map(([id, name]) => <option key={id} value={id}>{name}</option>)}
+        </select>
         <select className="clickup-filter" value={filterAssignee} onChange={(e) => setFilterAssignee(e.target.value)} title="Filter by assignee">
           <option value="">All assignees</option>
           {Object.entries(ASSIGNEE_MAP).map(([k, v]) => <option key={k} value={k}>{v}</option>)}

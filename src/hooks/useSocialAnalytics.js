@@ -4,6 +4,11 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 const PLATFORMS = ['facebook', 'instagram', 'tiktok', 'linkedin'];
 
+// Default handles — used if nothing is saved in Firestore yet
+const DEFAULT_HANDLES = {
+  linkedin: 'envision-inc',
+};
+
 export default function useSocialAnalytics() {
   const [analytics, setAnalytics] = useState({});
   const [loading, setLoading] = useState(true);
@@ -12,9 +17,9 @@ export default function useSocialAnalytics() {
     setLoading(true);
     const results = {};
 
-    // Load all platform data from Firestore
+    // Load saved handles, fall back to defaults
     const configDoc = await getDoc(doc(db, 'config', 'social_handles')).catch(() => null);
-    const handles = configDoc?.exists() ? configDoc.data() : {};
+    const handles = { ...DEFAULT_HANDLES, ...(configDoc?.exists() ? configDoc.data() : {}) };
 
     for (const platform of PLATFORMS) {
       try {
