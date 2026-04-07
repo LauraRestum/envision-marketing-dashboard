@@ -43,12 +43,23 @@ Create a `.env` file in the project root (never commit this file). Each variable
 | `ANTHROPIC_API_KEY` | Anthropic Console |
 | `FIREBASE_SERVICE_ACCOUNT` | Firebase Console > Service Accounts > Generate New Key (JSON) |
 | `CLICKUP_API_TOKEN` | ClickUp Settings > Apps > API Token |
-| `META_ACCESS_TOKEN` | Meta Business Suite > Developer Settings |
-| `LINKEDIN_ACCESS_TOKEN` | LinkedIn Developer Portal |
-| `TIKTOK_ACCESS_TOKEN` | TikTok Developer Portal |
 | `RESEND_API_KEY` | Resend dashboard |
+| `RESEND_FROM_ADDRESS` | Your sending email (default: marketing@envisionus.com) |
 | `DASHBOARD_PASSWORD_HASH` | Generated via bcrypt (details in Password section) |
 | `EXTERNAL_HUB_URL` | The URL of your external Marketing Resource Hub |
+
+### Social platform analytics (require developer app approval)
+
+| Variable | Where to get it | Approval needed |
+|----------|----------------|-----------------|
+| `META_ACCESS_TOKEN` | Meta Business Suite > Developer Settings | Meta app review |
+| `META_FB_PAGE_ID` | Facebook Page > About > Page ID | Same approval |
+| `META_IG_ACCOUNT_ID` | Instagram Business Account ID (via Meta API) | Same approval |
+| `TIKTOK_ACCESS_TOKEN` | TikTok Developer Portal | TikTok app review |
+| `LINKEDIN_ACCESS_TOKEN` | LinkedIn Developer Portal | LinkedIn app review |
+| `LINKEDIN_ORG_ID` | LinkedIn Company Page admin panel | Same approval |
+
+These API credentials require developer app approval from each platform, which can take days to weeks. The Analytics module works with sample data until credentials are added. Once approved, add the tokens to Vercel environment variables and redeploy.
 
 **Why secrets never go in the browser:** Any JavaScript running in a browser can be inspected by anyone with browser developer tools. If an API key is in browser code, it is public. Server-side keys stay on Vercel's servers, and the browser only talks to our own API routes, which then talk to external services. This keeps credentials safe from exposure.
 
@@ -101,19 +112,19 @@ Use the Settings page inside the dashboard:
 
 ## Phase Build Status
 
-- [x] **Phase 1, Foundation (shell):** App shell, nav, routing, dark/light toggle, Firebase, password gate, Settings page
-- [ ] **Phase 1, Foundation (modules):** Team & Tasks module, Meeting Notes module
-- [ ] **Phase 2, Content Operations:** Content Calendar, Ensight Planner, Home Dashboard, Notification system
-- [ ] **Phase 3, External Integration:** Inbox module, Email reply (Resend), ClickUp Projects
-- [ ] **Phase 4, AI Features:** Social Formatter, AI Idea Generator, Ensight-to-Social handoff
-- [ ] **Phase 5, Live Analytics:** Platform API integrations, charts, reports, competitor tracker
+- [x] **Phase 1, Foundation:** App shell, nav, routing, dark/light toggle, Firebase, password gate, Settings, Team & Tasks, Meeting Notes
+- [x] **Phase 2, Dashboard & Notifications:** Home Dashboard bento grid, notification system with badge counts and bell dropdown
+- [x] **Phase 3, External Integration:** Inbox module, email reply (Resend), ClickUp Projects live view
+- [x] **Phase 4, Content & AI:** Content Calendar, Ensight Planner, Social Formatter (Claude API), AI Idea Generator
+- [x] **Phase 5, Live Analytics:** Analytics module with charts, platform summary, top posts, competitor tracker, PDF export, API routes for Meta/TikTok/LinkedIn with Firestore caching
 
 ## Known Limitations
 
-- **Social platform API approval:** Facebook, Instagram, TikTok, and LinkedIn API access requires developer app approval from each platform. This can take days to weeks. The Analytics module UI will be built with mock data first.
-- **Competitor data is manual:** Social platforms do not allow API access to competitor data. Competitor follower counts and observations are entered manually.
+- **Social platform API approval (pending):** Facebook, Instagram, TikTok, and LinkedIn API access requires developer app approval from each platform. This can take days to weeks. The Analytics module displays realistic sample data until API credentials are configured. Once approved, add tokens to Vercel env variables and the module will switch to live data automatically.
+- **Competitor data is manual:** Social platforms do not allow API access to competitor data. Competitor follower counts and observations are entered manually in the Analytics module.
 - **Password gate is lightweight:** This is a simple bcrypt password check, not enterprise SSO. It protects against casual access. For a 3-person internal team, this is sufficient.
 - **No file upload in V1:** Content Calendar asset fields are text descriptions, not file uploads.
+- **Analytics trends are sample data until APIs connect:** The 30-day engagement chart shows generated sample data. Once platform APIs are connected, the chart will display real daily metrics from each platform.
 
 ## Architecture
 
@@ -131,9 +142,15 @@ src/
   styles/         Global CSS, design tokens
 
 api/              Vercel Serverless Functions
+  _db.js          Shared Firebase Admin initializer
   intake.js       External form submission receiver
   send-reply.js   Email reply via Resend
   clickup.js      ClickUp API proxy
   format.js       AI Social Formatter (Anthropic)
   ideas.js        AI Content Idea Generator (Anthropic)
+  analytics/
+    _normalizer.js  Unified data normalizer (common schema)
+    meta.js       Meta Graph API (Facebook + Instagram)
+    tiktok.js     TikTok Display API
+    linkedin.js   LinkedIn Marketing API
 ```

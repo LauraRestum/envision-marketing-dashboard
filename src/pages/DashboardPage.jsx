@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import useTasks from '../hooks/useTasks';
 import useMeetings from '../hooks/useMeetings';
 import useSubmissions from '../hooks/useSubmissions';
+import useAnalytics from '../hooks/useAnalytics';
 import useNotificationWriter from '../hooks/useNotificationWriter';
 import { useNotifications } from '../context/NotificationContext';
 import './DashboardPage.css';
@@ -21,6 +22,7 @@ export default function DashboardPage() {
   } = useTasks();
   const { meetings, loading: meetingsLoading, getNextMondaySync } = useMeetings();
   const { submissions, loading: submissionsLoading } = useSubmissions();
+  const { platformData } = useAnalytics();
   const { notifications, unreadCount } = useNotifications();
 
   // Write overdue task notifications to Firestore
@@ -144,10 +146,28 @@ export default function DashboardPage() {
           <p className="bento-empty">Ensight Planner will populate this in Phase 2.</p>
         </div>
 
-        {/* Analytics Pulse placeholder */}
-        <div className="bento-card bento-analytics">
+        {/* Analytics Pulse */}
+        <div className="bento-card bento-analytics" onClick={() => navigate('/analytics')}>
           <h4 className="bento-label">Analytics Pulse</h4>
-          <p className="bento-empty">Platform analytics will populate this in Phase 5.</p>
+          <div className="analytics-pulse-grid">
+            {[
+              { key: 'facebook', label: 'Facebook', color: '#003087' },
+              { key: 'instagram', label: 'Instagram', color: '#C13584' },
+              { key: 'tiktok', label: 'TikTok', color: '#69C9D0' },
+              { key: 'linkedin', label: 'LinkedIn', color: '#004bb5' },
+            ].map((p) => {
+              const d = platformData[p.key];
+              return (
+                <div key={p.key} className="pulse-item">
+                  <span className="pulse-plat" style={{ color: p.color }}>{p.label}</span>
+                  <span className="pulse-count">{d?.followers?.toLocaleString() || '--'}</span>
+                </div>
+              );
+            })}
+          </div>
+          <span className="pulse-sync">
+            {platformData.facebook?.live ? `Synced ${new Date(platformData.facebook.lastSynced).toLocaleString()}` : 'Showing sample data'}
+          </span>
         </div>
 
         {/* Inbox Preview */}

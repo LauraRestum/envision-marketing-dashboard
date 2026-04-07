@@ -252,6 +252,37 @@ body.light-mode .attention-item {
   flex: 1;
 }
 
+/* Analytics Pulse card */
+.analytics-pulse-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.pulse-item {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.pulse-plat {
+  font-size: 0.563rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.pulse-count {
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.pulse-sync {
+  font-size: 0.5rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
 /* Person cards */
 .bento-person {
   display: flex;
