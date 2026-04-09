@@ -27,6 +27,7 @@ export default function usePosts() {
       copy: post.copy || '',
       assetNote: post.assetNote || '',
       campaign: post.campaign || null,
+      pillar: post.pillar || null,
       status: post.status || 'draft',
       assignedTo: post.assignedTo || null,
       notes: post.notes || '',

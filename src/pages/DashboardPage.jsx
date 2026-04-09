@@ -9,6 +9,7 @@ import useNotificationWriter from '../hooks/useNotificationWriter';
 import { useNotifications } from '../context/NotificationContext';
 import { db } from '../lib/firebase';
 import { collection, onSnapshot } from 'firebase/firestore';
+import PillarTag from '../components/common/PillarTag';
 import './DashboardPage.css';
 
 const TEAM = [
@@ -308,6 +309,7 @@ export default function DashboardPage() {
                   <span className="social-week-platforms">
                     {(p.platforms || []).join(', ')}
                   </span>
+                  {p.pillar && <PillarTag pillarKey={p.pillar} size="xs" />}
                   <span className="social-week-copy">{p.copy ? (p.copy.length > 50 ? p.copy.slice(0, 50) + '...' : p.copy) : 'No copy yet'}</span>
                   <span className={`social-week-status status-${p.status}`}>{p.status?.replace('_', ' ')}</span>
                 </li>
@@ -336,6 +338,11 @@ export default function DashboardPage() {
               <div className="ensight-month-label">{ensightData.monthLabel}</div>
               <div className="ensight-story-summary">
                 {ensightData.monthStories.length} {ensightData.monthStories.length === 1 ? 'story' : 'stories'} planned
+              </div>
+              <div className="ensight-pillar-tags">
+                {ensightData.monthStories.filter((s) => s.pillar).map((s) => (
+                  <PillarTag key={s.id} pillarKey={s.pillar} size="xs" />
+                ))}
               </div>
               <ul className="ensight-stage-list">
                 {['draft', 'review', 'approved', 'published'].map((stage) => {

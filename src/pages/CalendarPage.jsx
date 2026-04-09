@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react';
 import usePosts from '../hooks/usePosts';
 import useCampaigns from '../hooks/useCampaigns';
+import { PILLARS } from '../constants/pillars';
+import PillarTag from '../components/common/PillarTag';
 import './CalendarPage.css';
 
 const PLATFORMS = [
@@ -284,6 +286,7 @@ function ListView({ posts, campaigns, onPostClick }) {
               <div className="list-row-copy">{p.copy ? p.copy.slice(0, 80) + (p.copy.length > 80 ? '...' : '') : '(no copy)'}</div>
             </div>
             <div className="list-row-right">
+              {p.pillar && <PillarTag pillarKey={p.pillar} size="xs" />}
               {camp && <span className="list-campaign-tag" style={{ borderColor: camp.color }} title={`Campaign: ${camp.name}`}>{camp.name}</span>}
               <span className={`list-status ${p.status}`}>{STATUS_LABELS[p.status]}</span>
               <span className="list-date">{p.scheduledDate ? formatDate(p.scheduledDate) : 'No date'}</span>
@@ -327,6 +330,7 @@ function CampaignView({ campaigns, posts, onPostClick }) {
                   <button key={p.id} className="campaign-post-card" onClick={() => onPostClick(p)} title={p.copy ? p.copy.slice(0, 80) : '(no copy)'}>
                     <div className="campaign-post-chips">
                       {(p.platforms || []).map((plat) => <PlatformChip key={plat} platform={plat} />)}
+                      {p.pillar && <PillarTag pillarKey={p.pillar} size="xs" />}
                     </div>
                     <span className="campaign-post-copy">{p.copy?.slice(0, 50) || '(no copy)'}</span>
                     <span className="campaign-post-date">{p.scheduledDate ? formatDate(p.scheduledDate) : ''}</span>
@@ -347,6 +351,7 @@ function PostDrawer({ post, defaultDate, campaigns, onSave, onDelete, onClose, o
   const [copy, setCopy] = useState(post?.copy || '');
   const [assetNote, setAssetNote] = useState(post?.assetNote || '');
   const [campaign, setCampaign] = useState(post?.campaign || '');
+  const [pillar, setPillar] = useState(post?.pillar || '');
   const [status, setStatus] = useState(post?.status || 'draft');
   const [assignedTo, setAssignedTo] = useState(post?.assignedTo || '');
   const [notes, setNotes] = useState(post?.notes || '');
@@ -363,6 +368,7 @@ function PostDrawer({ post, defaultDate, campaigns, onSave, onDelete, onClose, o
       copy,
       assetNote,
       campaign: campaign || null,
+      pillar: pillar || null,
       status,
       assignedTo: assignedTo || null,
       notes,
@@ -444,6 +450,13 @@ function PostDrawer({ post, defaultDate, campaigns, onSave, onDelete, onClose, o
               <select value={campaign} onChange={(e) => setCampaign(e.target.value)}>
                 <option value="">None</option>
                 {campaigns.map((c) => <option key={c.id} value={c.slug || c.name}>{c.name}</option>)}
+              </select>
+            </label>
+            <label className="post-field">
+              <span className="post-field-label">Pillar</span>
+              <select value={pillar} onChange={(e) => setPillar(e.target.value)}>
+                <option value="">None</option>
+                {PILLARS.map((p) => <option key={p.key} value={p.key}>{p.label}</option>)}
               </select>
             </label>
             <label className="post-field">

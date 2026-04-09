@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import usePosts from '../hooks/usePosts';
 import useSocialAnalytics from '../hooks/useSocialAnalytics';
 import usePostMetrics from '../hooks/usePostMetrics';
+import { PILLAR_LABELS } from '../constants/pillars';
+import PillarTag from '../components/common/PillarTag';
 import './AnalyticsPage.css';
 
 const PLATFORMS = [
@@ -12,10 +14,7 @@ const PLATFORMS = [
   { key: 'linkedin', label: 'LinkedIn', color: '#004bb5', url: 'https://www.linkedin.com/company/envision-inc' },
 ];
 
-const PILLAR_LABELS = {
-  research: 'Research', vision_rehab: 'Vision Rehab', employment: 'Employment',
-  education: 'Education', arts_culture: 'Arts & Culture',
-};
+// PILLAR_LABELS imported from constants/pillars
 
 function formatFollowers(count) {
   if (count >= 1_000_000) return `${(count / 1_000_000).toFixed(1)}M`;
@@ -359,7 +358,7 @@ function IdeaGenerator({ onAddToCalendar }) {
             <div key={i} className="idea-card">
               <div className="idea-card-header">
                 <span className="idea-platform-tag">{idea.platform}</span>
-                {idea.pillar && <span className="idea-pillar-tag">{PILLAR_LABELS[idea.pillar] || idea.pillar}</span>}
+                {idea.pillar && <PillarTag pillarKey={idea.pillar} />}
                 {idea.format && <span className="idea-format-tag">{idea.format}</span>}
               </div>
               <div className="idea-hook">{idea.hook}</div>

@@ -599,6 +599,13 @@ body.dark-mode .social-week-item:hover {
   font-weight: 500;
 }
 
+.ensight-pillar-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
 .ensight-stage-list {
   list-style: none;
   display: flex;
